@@ -5,9 +5,20 @@ import {
   isoDateSchema,
   imageRefSchema,
   measurementSchema,
+  composeHashSchema,
   signatureSchema,
 } from "./primitives.ts";
 import { boundarySpecSchema } from "./specimen.ts";
+
+/** A published upstream advisory against a specific measurement → freshness `cve`. */
+export const advisorySchema = z
+  .object({
+    measurement: composeHashSchema,
+    cve: z.string().min(1),
+    severity: z.enum(["low", "medium", "high", "critical"]).optional(),
+  })
+  .strict();
+export type Advisory = z.infer<typeof advisorySchema>;
 
 // DERIVED schemas — written by the pipeline into builds/<id>/<version>.json and
 // attestations/<measurement>.json. Validated on write (CI asserts its own output)

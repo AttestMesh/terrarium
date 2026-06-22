@@ -1,0 +1,8 @@
+{
+  "postgres": {
+    "behind": false,
+    "latestRelease": null,
+    "pinnedRef": "v16.3-cvm1",
+    "repo": "terrarium-registry/postgres-cvm"
+  }
+}

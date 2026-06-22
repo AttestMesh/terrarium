@@ -8,6 +8,7 @@ import { boundaryLint } from "./lint/boundary.ts";
 import { gate0 } from "./gate0.ts";
 import { measure } from "./measurement.ts";
 import { checkScope, parseNameStatus } from "./scope-check.ts";
+import { watch } from "./watch.ts";
 import { attest } from "./attest.ts";
 import { genLog, verifyLog } from "./gen-log.ts";
 import { buildIndex } from "./build-index.ts";
@@ -88,6 +89,13 @@ switch (cmd) {
     console.log(`gen-log: ${entries.length} signed entr${entries.length === 1 ? "y" : "ies"} → log/measurements.jsonl`);
     break;
   }
+  case "watch": {
+    const state = await watch();
+    for (const [id, s] of Object.entries(state)) {
+      console.log(`watch ${id}: pinned ${s.pinnedRef} · upstream ${s.latestRelease ?? "unknown"} · ${s.behind ? "BEHIND" : "current"}`);
+    }
+    break;
+  }
   case "verify-log": {
     const r = verifyLog();
     console.log(`verify-log: ${r.ok ? `ok (${r.checked} entries)` : `FAILED — ${r.reason}`}`);
@@ -106,7 +114,7 @@ switch (cmd) {
   }
   default:
     console.error(
-      "usage: terrarium <validate|gate0|measure|scope-check|keygen|attest|gen-log|verify-log|build-index|gen-api> [args]",
+      "usage: terrarium <validate|gate0|measure|scope-check|keygen|attest|gen-log|verify-log|watch|build-index|gen-api> [args]",
     );
     process.exit(2);
 }

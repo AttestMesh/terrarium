@@ -1,9 +1,10 @@
 import { join } from "node:path";
-import { listSpecimenIds, readSpecimen, readBuilds, readAttestations, readReviewers, writeJson, dir } from "./io.ts";
+import { listSpecimenIds, readSpecimen, readBuilds, readAttestations, readReviewers, readAdvisories, readUpstreamState, writeJson, dir } from "./io.ts";
 import { honestyLint } from "./lint/honesty.ts";
 import { boundaryLint } from "./lint/boundary.ts";
 import { deriveSeo } from "./derive/seo.ts";
 import { deriveLore, deriveProofTier, deriveTier, attestationsForMeasurement } from "./derive/facts.ts";
+import { deriveFreshness } from "./derive/freshness.ts";
 import { integrationSchema, type Integration, type Publisher } from "./schema/catalog.ts";
 import type { Specimen } from "./schema/specimen.ts";
 
@@ -17,11 +18,13 @@ function publisherFor(specimen: Specimen): Publisher {
 /** Read-only join: specimens × latest build × attestations(by measurement) → Integration[]. */
 export function computeIntegrations(): Integration[] {
   const allAttestations = readAttestations();
+  const advisories = readAdvisories();
+  const upstream = readUpstreamState();
   const integrations: Integration[] = [];
 
   for (const id of listSpecimenIds()) {
     const { specimen, boundary, fieldGuide } = readSpecimen(id);
-    const builds = readBuilds(id);
+    const builds = readBuilds(id).sort((a, b) => b.builtAt.localeCompare(a.builtAt));
     const latest = builds.find((b) => b.isLatest) ?? builds[0];
     if (!latest) continue; // not yet reproduced (Gate 0) → not listed at any tier
 
@@ -34,6 +37,19 @@ export function computeIntegrations(): Integration[] {
       hasUsageSignal: false, // usage threshold wiring is M2
       validAttestations: atts.length,
     });
+    const freshness = deriveFreshness({
+      measurement: latest.measurement.value,
+      pinnedRef: latest.upstreamRef,
+      latestRelease: upstream[id]?.latestRelease,
+      advisories,
+    });
+    const versions = builds.map((b) => ({
+      version: b.version,
+      measurement: b.measurement,
+      builtAt: b.builtAt,
+      freshness: b.isLatest ? freshness : ("behind" as const), // superseded builds are behind
+      isLatest: b.isLatest,
+    }));
 
     integrations.push(
       integrationSchema.parse({
@@ -44,9 +60,10 @@ export function computeIntegrations(): Integration[] {
         publisher: publisherFor(specimen),
         tier,
         proofTier: deriveProofTier(boundary),
-        freshness: latest.freshness,
+        freshness,
         costHint: specimen.flavorHint,
         latestBuild: latest,
+        versions,
         attestations: atts,
         fieldGuide,
         lore: deriveLore(specimen, boundary, latest),

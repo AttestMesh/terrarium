@@ -56,6 +56,19 @@ export const integrationSchema = z
     freshness: freshnessSchema,
     costHint: z.string().optional(),
     latestBuild: buildSchema,
+    versions: z
+      .array(
+        z
+          .object({
+            version: z.string(),
+            measurement: measurementSchema,
+            builtAt: isoDateSchema,
+            freshness: freshnessSchema,
+            isLatest: z.boolean(),
+          })
+          .strict(),
+      )
+      .default([]),
     attestations: z.array(attestationSchema),
     fieldGuide: fieldGuideSchema,
     lore: loreSchema,

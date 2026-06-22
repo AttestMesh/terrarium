@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { specimenSchema, boundarySpecSchema, fieldGuideSchema, type Specimen, type BoundarySpec, type FieldGuide } from "./schema/specimen.ts";
 import { reviewerSchema, type Reviewer } from "./schema/reviewer.ts";
-import { buildSchema, attestationSchema, type Build, type Attestation } from "./schema/build.ts";
+import { buildSchema, attestationSchema, advisorySchema, type Build, type Attestation, type Advisory } from "./schema/build.ts";
 
 // The single I/O boundary. The repo root is the cwd (CLI is always run from there).
 export const ROOT = process.cwd();
@@ -14,6 +14,7 @@ export const dir = {
   attestations: join(ROOT, "attestations"),
   log: join(ROOT, "log"),
   secrets: join(ROOT, ".secrets"),
+  data: join(ROOT, "data"),
   index: join(ROOT, "index"),
   publicApi: join(ROOT, "public"),
 };
@@ -124,6 +125,28 @@ export function readAttestations(): Attestation[] {
   return readdirSync(dir.attestations)
     .filter((f) => f.endsWith(".json"))
     .map((f) => attestationSchema.parse(readJson(join(dir.attestations, f))));
+}
+
+export interface UpstreamEntry {
+  repo: string;
+  pinnedRef: string;
+  latestRelease: string | null;
+  behind: boolean;
+}
+
+/** advisories.yaml — published upstream CVEs against specific measurements (maintained). */
+export function readAdvisories(): Advisory[] {
+  const path = join(ROOT, "advisories.yaml");
+  if (!existsSync(path)) return [];
+  const raw = parseYaml(readFileSync(path, "utf8"));
+  return Array.isArray(raw) ? raw.map((a) => advisorySchema.parse(a)) : [];
+}
+
+/** data/upstream.json — the watcher's latest snapshot (id → upstream release state). */
+export function readUpstreamState(): Record<string, UpstreamEntry> {
+  const path = join(dir.data, "upstream.json");
+  if (!existsSync(path)) return {};
+  return readJson(path) as Record<string, UpstreamEntry>;
 }
 
 export function cleanGenerated(): void {

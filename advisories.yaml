@@ -1,0 +1,9 @@
+# Published upstream advisories against specific measurements. A maintainer adds an
+# entry when a CVE affects a certified build; build-index then derives freshness: cve
+# and the specimen page renders a measurement-invalid banner (a static site must never
+# silently serve a build with a known advisory). Keyed by the exact measurement value.
+#
+# - measurement: <64-hex compose-hash>
+#   cve: CVE-2026-XXXX
+#   severity: high
+[]

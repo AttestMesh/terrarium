@@ -20,8 +20,8 @@ Maps the spec (`studio/docs/specs/cvm-integrations-marketplace.md`) to code. ✅
 | ✅ Signed measurement log (append-only, hash-chained) | `cli/src/gen-log.ts` (materialised from git substrate), `/measurements/:hash` | `crypto.test.ts`; integration-verified tamper detection |
 | ✅ First-party certification + signing → `guarded` | `cli/src/{crypto,attest}.ts`, `reviewers/flashbots.yaml`, tier join by measurement | `crypto.test.ts`, `facts.test.ts`, `built-html.test.ts` (guarded + signer) |
 | ✅ Embeddable trust badge | `gen-api.ts` → `/badge/:id.svg` | `built-html` (served) |
-| 🟡 Deprecation / measurement-invalid path | freshness `cve` → static banner | `built-html` (banner) |
-| 🟡 Gate 0 zero-trust isolation (CI) | designed (split-execution, hermetic, path-scoped auto-merge); `CODEOWNERS` | — (workflows in M2) |
-| 🟡 Upstream watcher / freshness | `freshnessSchema`, `/integrations/:id/freshness` | — (watcher bot in M2) |
+| ✅ Deprecation / measurement-invalid path | `advisories.yaml` → `deriveFreshness` `cve` → static banner | `freshness.test.ts`, `built-html` |
+| ✅ Gate 0 zero-trust isolation (CI) | `.github/workflows/pr-gates.yml` (pull_request, no secrets, ≥2-rebuilder matrix → converge), `scope-check`, `CODEOWNERS`, `docs/ci-and-branch-protection.md` | `scope-check.test.ts` |
+| ✅ Upstream watcher / freshness / version history | `cli/src/watch.ts`, `cli/src/derive/freshness.ts`, Integration `versions[]`, `/integrations/:id/freshness` | `freshness.test.ts` |
 | ✅ Trust-policy *schema* published (eval is consumer-side) | `trustPolicySchema` | — |
 | ⏳ Federated reviewers, bonding, leak/audit bounty, on-chain registry, observatory report | — | — (deferred, gated on third-party demand) |

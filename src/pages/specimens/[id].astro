@@ -147,7 +147,27 @@ const proof = (anchor: string) => `#${anchor}`;
           <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">pinned ref</th><td class="py-2">{b.source.ref}</td></tr>
           <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">recipe</th><td class="py-2">{b.source.recipe}</td></tr>
           <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">image</th><td class="py-2 break-all">{b.imageRef}</td></tr>
-          <tr><th class="py-2 pr-4 text-left text-ink-muted">freshness</th><td class="py-2">{b.freshness} · {b.version}</td></tr>
+          <tr><th class="py-2 pr-4 text-left text-ink-muted">freshness</th><td class="py-2">{i.freshness} · certified {b.upstreamRef}</td></tr>
+        </tbody>
+      </table>
+
+      <h4 class="mt-5 font-mono text-xs uppercase text-ink-muted">Version history — a rebuild is a new measurement</h4>
+      <table class="mt-2 w-full border-collapse font-mono text-xs">
+        <thead>
+          <tr class="border-b border-rule text-ink-muted">
+            <th class="py-1 pr-4 text-left">version</th><th class="py-1 pr-4 text-left">measurement</th>
+            <th class="py-1 pr-4 text-left">built</th><th class="py-1 text-left">freshness</th>
+          </tr>
+        </thead>
+        <tbody>
+          {i.versions.map((v) => (
+            <tr class="border-b border-rule">
+              <td class="py-1 pr-4">{v.version}{v.isLatest ? " · latest" : ""}</td>
+              <td class="py-1 pr-4 break-all">{v.measurement.value.slice(0, 16)}…</td>
+              <td class="py-1 pr-4">{v.builtAt.slice(0, 10)}</td>
+              <td class="py-1">{v.freshness}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </section>
