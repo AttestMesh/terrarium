@@ -1,14 +1,16 @@
 {
   "additions": [
+    "dstackgres"
+  ],
+  "churned": [
     "postgres"
   ],
-  "churned": [],
   "counts": {
     "byCategory": {
       "sealed-datastore": 1
     },
     "byTier": {
-      "guarded": 1
+      "raw": 1
     },
     "fresh": 1,
     "stale": 0,
@@ -17,9 +19,9 @@
   "promotions": [],
   "roster": [
     {
-      "id": "postgres",
-      "tier": "guarded"
+      "id": "dstackgres",
+      "tier": "raw"
     }
   ],
-  "takenAt": "2026-06-22T17:49:21.538Z"
+  "takenAt": "2026-06-22T18:40:57.968Z"
 }

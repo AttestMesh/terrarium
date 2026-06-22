@@ -1,0 +1,47 @@
+{
+  "boundarySpec": {
+    "egress": {
+      "allowlist": [
+        {
+          "host": "chain-indexer.teesql.com"
+        }
+      ],
+      "monitor": "warden@1",
+      "policy": "allowlist"
+    },
+    "logRedaction": {
+      "postgres": "log_statement=none"
+    },
+    "raTlsSurfaces": [
+      5433
+    ],
+    "sealedVolumes": [
+      "/var/lib/postgresql/data",
+      "/teesql-shared",
+      "/var/lib/teesql-fabric",
+      "/data"
+    ],
+    "secrets": {
+      "replication": "born-in-box"
+    }
+  },
+  "builtAt": "2026-06-22T18:39:31.054Z",
+  "freshness": "current",
+  "imageRef": "ghcr.io/teesql/teesql-postgres:v1.2.0",
+  "integrationId": "dstackgres",
+  "isLatest": true,
+  "measurement": {
+    "kind": "compose-hash",
+    "value": "e1eb74c5a2222449ae122ada7935cf6fc9ace1fc0dba53f7f543c60445a97272"
+  },
+  "rebuilders": 2,
+  "reproducible": true,
+  "source": {
+    "recipe": "./compose.yml",
+    "ref": "1fc3ce2a00091f4edb2bc03b66bea7199f80bcb7",
+    "repo": "github.com/TeeSQL/dstackgres"
+  },
+  "sourceCommit": "uncommitted",
+  "upstreamRef": "1fc3ce2a00091f4edb2bc03b66bea7199f80bcb7",
+  "version": "1fc3ce2a00091f4edb2bc03b66bea7199f80bcb7"
+}

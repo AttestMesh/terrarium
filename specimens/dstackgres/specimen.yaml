@@ -1,0 +1,17 @@
+# Real specimen, sourced from a real repo: TeeSQL/dstackgres — TEE-hosted Postgres
+# DBaaS on dstack. The recipe is the project's actual cluster-node app-compose; the
+# measurement CI derives is the dstack compose-hash over it (the value Phala/dstack
+# would allowlist for this deployment).
+id: dstackgres
+commonName: dstackgres
+category: sealed-datastore
+role: stateful-db
+upstream:
+  repo: github.com/TeeSQL/dstackgres
+  ref: 1fc3ce2a00091f4edb2bc03b66bea7199f80bcb7   # pinned commit (2026-05-26)
+build:
+  recipe: ./compose.yml                            # the real cluster-node app-compose
+ingress:
+  - { port: 5433, protocol: ra-tls }               # mutual RA-TLS (client + server prove TEE)
+  - { port: 8080, protocol: http }                 # read-only status (/health /metrics /attestation)
+flavorHint: tdx.medium

@@ -40,7 +40,14 @@ export const githubRefSchema = z.string().min(1, "a pinned tag or commit");
 /** ISO-8601 timestamp. */
 export const isoDateSchema = z.iso.datetime();
 
-/** An OCI image reference resolved to a digest: name@sha256:<64hex>. */
+/**
+ * An OCI image reference: name[:tag][@sha256:<64hex>]. A digest pin is preferred
+ * (immutable); a bare tag is accepted but flagged by a boundary lint, because a tag
+ * doesn't pin the bytes — a real registry has both kinds.
+ */
 export const imageRefSchema = z
   .string()
-  .regex(/@sha256:[a-f0-9]{64}$/, "OCI ref pinned to a digest (name@sha256:...)");
+  .regex(/^[A-Za-z0-9._/-]+(?::[A-Za-z0-9._-]+)?(?:@sha256:[a-f0-9]{64})?$/, "OCI image reference");
+
+/** Is this image reference pinned to an immutable digest? */
+export const isDigestPinned = (ref: string): boolean => /@sha256:[a-f0-9]{64}$/.test(ref);

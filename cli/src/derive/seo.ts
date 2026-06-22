@@ -6,6 +6,7 @@ import type { Seo } from "../schema/catalog.ts";
 
 const WORKLOAD_LABEL: Record<string, string> = {
   postgres: "PostgreSQL",
+  dstackgres: "PostgreSQL",
   redis: "Redis",
   qdrant: "Qdrant",
   sqlite: "SQLite",

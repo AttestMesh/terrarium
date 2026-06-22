@@ -10,9 +10,12 @@ export interface LintFinding {
 // contradicts. A `fieldNote: "nothing leaves"` is rejected unless egress is deny-all.
 // Kept as a small, unit-tested rule table so every leak a reviewer finds becomes one
 // more entry (the spec's self-improving lints).
+// Match only TOTALIZING egress claims ("nothing/no data leaves|escapes"). A bare
+// "never leaves" is intentionally NOT here: it false-positives on confidentiality
+// claims about a specific thing (e.g. "the key never leaves enclave memory"), which
+// is not a claim that the workload makes no outbound calls. (Caught by dstackgres.)
 const NO_EGRESS_CLAIMS: RegExp[] = [
   /nothing\s+(?:it\s+holds\s+)?(?:ever\s+)?leaves/i,
-  /never\s+leaves(?:\s+the\s+(?:box|enclave))?/i,
   /no(?:thing)?\s+data\s+(?:ever\s+)?leaves/i,
   /nothing\s+(?:ever\s+)?escapes/i,
   /no\s+egress/i,

@@ -26,8 +26,8 @@ specimens/<id>/  ──►  Gate 0 (reproduce → measurement)  ──►  build
 
 ```bash
 npm install
-npm run validate specimens/postgres   # Gate 1: schema + boundary + honesty lints
-npm run terrarium gate0 postgres       # Gate 0: reproduce → measurement → builds/
+npm run validate specimens/dstackgres  # Gate 1: schema + boundary + honesty lints
+npm run terrarium gate0 dstackgres     # Gate 0: reproduce → measurement → builds/
 npm run gen                            # build-index + gen-api (→ index/ + public/ read-API)
 npm run dev                            # Astro dev server (http://localhost:4321)
 npm run build                          # gen + static build (→ dist/)
@@ -49,4 +49,4 @@ npm run typecheck                      # astro check + tsc --noEmit
 
 ## Status
 
-v1 complete (M0–M2): permissionless reproducibility-gated listing, first-party certification → `guarded` (ed25519 + signed hash-chained log), zero-trust CI gates, freshness/upstream watcher + version history, the SEO surface (filter/compare/learn hubs), the Wanted demand ledger, and catalog snapshots (the observatory). Postgres / "The Vault Keeper" is listed `guarded`, end-to-end. Deferred to later phases (gated on third-party demand): federated reviewers, bonding/slashing, leak/audit bounty, on-chain registry, the observatory *report* layer. See `docs/traceability.md` + `docs/ci-and-branch-protection.md`.
+v1 complete (M0–M2): permissionless reproducibility-gated listing, first-party certification → `guarded` (ed25519 + signed hash-chained log), zero-trust CI gates, freshness/upstream watcher + version history, the SEO surface (filter/compare/learn hubs), the Wanted demand ledger, and catalog snapshots (the observatory). The seed specimen is **dstackgres** ([TeeSQL/dstackgres](https://github.com/TeeSQL/dstackgres), a real TEE-hosted Postgres DBaaS on dstack): its measurement is the real compose-hash of the project's cluster-node app-compose, and it lists honestly at `raw` — Gate 1 flags its controlled egress (WAL backups + on-chain control) and tag-pinned (not digest-pinned) images as real boundary questions a reviewer must resolve before `guarded`. Deferred to later phases (gated on third-party demand): federated reviewers, bonding/slashing, leak/audit bounty, on-chain registry, the observatory *report* layer. See `docs/traceability.md` + `docs/ci-and-branch-protection.md`.

@@ -20,13 +20,15 @@ export function measure(id: string, recipeText: string): Measurement {
   return { kind: "compose-hash", value: getComposeHash(buildAppCompose(id, recipeText)) };
 }
 
-/** The primary (first-service) image, pinned to its digest — the imageRef consumers resolve. */
+// Infra sidecars that share a compose but aren't the workload itself.
+const INFRA_SERVICE = /fabric|sidecar|proxy|monitor|gateway|dns|wireguard|warden|envoy/i;
+
+/** The workload image a consumer resolves — the first non-infra service's image. */
 export function primaryImageRef(recipeText: string): string {
   const compose = parseYaml(recipeText) as { services?: Record<string, { image?: string }> };
   const services = compose.services ?? {};
-  for (const name of Object.keys(services)) {
-    const image = services[name]?.image;
-    if (image) return image;
-  }
+  const named = Object.keys(services).filter((n) => services[n]?.image);
+  const pick = named.find((n) => !INFRA_SERVICE.test(n)) ?? named[0];
+  if (pick) return services[pick]!.image!;
   throw new Error("recipe has no service image to resolve as imageRef");
 }

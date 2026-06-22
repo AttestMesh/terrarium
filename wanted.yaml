@@ -27,10 +27,10 @@
   votes: 3
   origin: search-miss
   state: requested
-- id: postgres
-  workload: PostgreSQL
+- id: dstackgres
+  workload: PostgreSQL (dstackgres)
   category: sealed-datastore
   votes: 9
   origin: request
   state: listed
-  integrationId: postgres
+  integrationId: dstackgres
