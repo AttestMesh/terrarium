@@ -6,7 +6,9 @@ import tailwindcss from "@tailwindcss/vite";
 // pages. SEO is load-bearing, so output is fully static/prerendered.
 // `site` powers absolute canonical URLs + sitemap; override via TERRARIUM_SITE at build.
 export default defineConfig({
-  site: process.env.TERRARIUM_SITE ?? "https://terrarium.example",
+  // `||`, not `??`: an unset GitHub repo variable expands to "" in CI (a non-null
+  // empty string), which Astro rejects as an invalid URL. Treat "" as unset.
+  site: process.env.TERRARIUM_SITE || "https://terrarium.example",
   output: "static",
   integrations: [svelte()],
   vite: {
