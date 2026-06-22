@@ -2,6 +2,7 @@
 import TierBadge from "./TierBadge.astro";
 import ProofChip from "./ProofChip.astro";
 import { CATEGORY_LABEL } from "../lib/catalog.ts";
+import { url } from "../lib/url.ts";
 import type { Integration } from "../../cli/src/schema/catalog.ts";
 
 interface Props { i: Integration }
@@ -16,7 +17,7 @@ const { i } = Astro.props;
   data-fresh={i.freshness}
   class="tk-card group p-5"
 >
-  <a href={`/specimens/${i.id}`} class="block">
+  <a href={url(`/specimens/${i.id}`)} class="block">
     <div class="flex items-baseline justify-between gap-3">
       <span class="font-serif text-xl text-ink transition-colors group-hover:text-moss-deep">{i.commonName}</span>
       <TierBadge tier={i.tier} />

@@ -9,6 +9,8 @@ export default defineConfig({
   // `||`, not `??`: an unset GitHub repo variable expands to "" in CI (a non-null
   // empty string), which Astro rejects as an invalid URL. Treat "" as unset.
   site: process.env.TERRARIUM_SITE || "https://terrarium.example",
+  // "/" at root (tailnet/local); "/terrarium" on GitHub Pages (project subpath).
+  base: process.env.TERRARIUM_BASE || "/",
   output: "static",
   integrations: [svelte()],
   vite: {

@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { latestSnapshot } from "../../cli/src/snapshot.ts";
 import { allIntegrations, CATEGORY_LABEL } from "../lib/catalog.ts";
+import { url } from "../lib/url.ts";
 
 // A reporting view over the catalog snapshots. Leads with the attested metric,
 // labels attested vs self-reported, and tracks churn alongside growth.
@@ -17,7 +18,7 @@ const pctFresh = snap && snap.counts.total ? Math.round((100 * snap.counts.fresh
   description="A time-series over the Terrarium catalog: guarded (attested) integrations, tier mix, % fresh, and churn. Lead metrics come from cryptographic attestations."
 >
   <main class="mx-auto max-w-3xl px-6 py-10">
-    <nav aria-label="Breadcrumb" class="font-mono text-[11px] text-ink-dim"><a href="/" class="hover:text-moss">Home</a> › Observatory</nav>
+    <nav aria-label="Breadcrumb" class="font-mono text-[11px] text-ink-dim"><a href={url("/")} class="hover:text-moss">Home</a> › Observatory</nav>
     <p class="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-moss">state of confidential computing</p>
     <h1 class="mt-2 font-serif text-4xl text-ink">Observatory</h1>
     <p class="mt-2 max-w-2xl text-ink-body">How coverage, certification, and freshness change between snapshots.</p>

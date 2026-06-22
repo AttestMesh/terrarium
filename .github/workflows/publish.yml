@@ -31,7 +31,10 @@ jobs:
       - name: build site + static read-API
         run: npm run build
         env:
-          TERRARIUM_SITE: ${{ vars.TERRARIUM_SITE }}
+          # project page → https://attestmesh.github.io/terrarium/. Override either via
+          # repo variables (e.g. a custom domain at the apex → TERRARIUM_BASE=/).
+          TERRARIUM_SITE: ${{ vars.TERRARIUM_SITE || 'https://attestmesh.github.io' }}
+          TERRARIUM_BASE: ${{ vars.TERRARIUM_BASE || '/terrarium' }}
       - name: verify the signed measurement log
         run: npx tsx cli/src/index.ts verify-log
       - uses: actions/upload-pages-artifact@v3

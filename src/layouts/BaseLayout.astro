@@ -1,5 +1,6 @@
 ---
 import "../styles/globals.css";
+import { url } from "../lib/url.ts";
 
 interface Props {
   title: string;
@@ -11,11 +12,11 @@ interface Props {
 const { title, description, canonical, jsonLd = [] } = Astro.props;
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
 const nav = [
-  ["/", "Catalog"],
-  ["/compare", "Compare"],
-  ["/wanted", "Wanted"],
-  ["/observatory", "Observatory"],
-  ["/learn", "Learn"],
+  [url("/"), "Catalog"],
+  [url("/compare"), "Compare"],
+  [url("/wanted"), "Wanted"],
+  [url("/observatory"), "Observatory"],
+  [url("/learn"), "Learn"],
 ];
 ---
 
@@ -43,7 +44,7 @@ const nav = [
   <body class="min-h-screen bg-page text-ink-body antialiased">
     <header class="sticky top-0 z-10 border-b border-rule bg-page/85 backdrop-blur">
       <div class="mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-3">
-        <a href="/" class="flex items-baseline gap-2">
+        <a href={url("/")} class="flex items-baseline gap-2">
           <span class="inline-block h-2 w-2 rounded-sm bg-moss" style="box-shadow:0 0 8px var(--color-moss)"></span>
           <span class="font-serif text-xl text-ink">Terrarium</span>
           <span class="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-ink-dim sm:inline">field guide</span>

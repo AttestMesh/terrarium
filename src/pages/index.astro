@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import CatalogFilter from "../components/islands/CatalogFilter.svelte";
 import SpecimenCard from "../components/SpecimenCard.astro";
 import { allIntegrations } from "../lib/catalog.ts";
+import { url } from "../lib/url.ts";
 
 const integrations = allIntegrations();
 const facets = {
@@ -29,7 +30,7 @@ const description =
     <div class="mt-5 flex flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] text-ink-dim">
       <span><span class="text-moss">{guarded}</span> guarded</span>
       <span><span class="text-ink">{integrations.length}</span> listed</span>
-      <span>measurement = dstack compose-hash · <a href="/learn/reproducible-builds" class="tk-link">rebuild it yourself</a></span>
+      <span>measurement = dstack compose-hash · <a href={url("/learn/reproducible-builds")} class="tk-link">rebuild it yourself</a></span>
     </div>
 
     <div class="mt-8"><CatalogFilter client:load facets={facets} /></div>
