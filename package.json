@@ -25,6 +25,9 @@
   },
   "dependencies": {
     "@astrojs/svelte": "^8.0.5",
+    "@fontsource-variable/outfit": "^5.2.8",
+    "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@fontsource/instrument-serif": "^5.2.8",
     "@noble/hashes": "^1.6.1",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.1.9",

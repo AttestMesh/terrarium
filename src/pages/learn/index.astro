@@ -8,14 +8,15 @@ import { EXPLAINERS } from "../../lib/explainers.ts";
   description="Plain explainers on the concepts behind confidential CVM integrations: remote attestation, reproducible builds, and Intel TDX."
 >
   <main class="mx-auto max-w-3xl px-6 py-10">
-    <nav aria-label="Breadcrumb" class="font-mono text-xs text-ink-muted"><a href="/" class="hover:text-moss-deep">Home</a> › Learn</nav>
-    <h1 class="mt-2 font-serif text-3xl text-moss-deep">Learn</h1>
-    <ul class="mt-6 space-y-4">
+    <nav aria-label="Breadcrumb" class="font-mono text-[11px] text-ink-dim"><a href="/" class="hover:text-moss">Home</a> › Learn</nav>
+    <p class="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-moss">explainers</p>
+    <h1 class="mt-2 font-serif text-4xl text-ink">Learn</h1>
+    <ul class="mt-6 space-y-3">
       {EXPLAINERS.map((e) => (
-        <li class="rounded-lg border border-rule bg-card p-5">
+        <li class="tk-card group p-5">
           <a href={`/learn/${e.slug}`} class="block">
-            <span class="font-serif text-xl text-moss-deep">{e.title}</span>
-            <p class="mt-1 text-sm text-ink-muted">{e.description}</p>
+            <span class="font-serif text-xl text-ink transition-colors group-hover:text-moss-deep">{e.title}</span>
+            <p class="mt-1 text-sm text-ink-body">{e.description}</p>
           </a>
         </li>
       ))}

@@ -21,15 +21,16 @@ const breadcrumb = {
 
 <BaseLayout title={`${e.title} · Terrarium`} description={e.description} jsonLd={[breadcrumb]}>
   <main class="mx-auto max-w-3xl px-6 py-10">
-    <nav aria-label="Breadcrumb" class="font-mono text-xs text-ink-muted">
-      <a href="/" class="hover:text-moss-deep">Home</a> › <a href="/learn" class="hover:text-moss-deep">Learn</a> › <span>{e.keyword}</span>
+    <nav aria-label="Breadcrumb" class="font-mono text-[11px] text-ink-dim">
+      <a href="/" class="hover:text-moss">Home</a> › <a href="/learn" class="hover:text-moss">Learn</a> › <span class="text-ink-muted">{e.keyword}</span>
     </nav>
-    <h1 class="mt-2 font-serif text-3xl text-moss-deep">{e.title}</h1>
-    <article class="mt-5 space-y-4 text-ink-body">
+    <p class="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-moss">{e.keyword}</p>
+    <h1 class="mt-2 font-serif text-4xl leading-tight text-ink">{e.title}</h1>
+    <article class="mt-5 space-y-4 text-lg leading-relaxed text-ink-body">
       {e.body.map((p) => <p>{p}</p>)}
     </article>
-    <p class="mt-8 font-mono text-xs text-ink-muted">
-      ← <a href="/" class="text-moss-deep underline">Browse specimens</a> that put this into practice.
+    <p class="mt-8 font-mono text-[11px] text-ink-muted">
+      ← <a href="/" class="tk-link">Browse specimens</a> that put this into practice.
     </p>
   </main>
 </BaseLayout>

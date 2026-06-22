@@ -1,7 +1,8 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import CatalogFilter from "../components/islands/CatalogFilter.svelte";
-import { allIntegrations, CATEGORY_LABEL } from "../lib/catalog.ts";
+import SpecimenCard from "../components/SpecimenCard.astro";
+import { allIntegrations } from "../lib/catalog.ts";
 
 const integrations = allIntegrations();
 const facets = {
@@ -10,48 +11,32 @@ const facets = {
   proofs: [...new Set(integrations.map((i) => i.proofTier))].sort(),
   freshness: [...new Set(integrations.map((i) => i.freshness))].sort(),
 };
+const guarded = integrations.filter((i) => i.tier === "guarded").length;
 const title = "Terrarium — a field guide to confidential CVM integrations";
 const description =
   "An open registry of guarded, reproducible, confidential CVM integrations. Each specimen reproduces to a verifiable measurement and ships a certified confidential boundary.";
 ---
 
 <BaseLayout title={title} description={description}>
-  <main class="mx-auto max-w-5xl px-6 py-10">
-    <h1 class="font-serif text-4xl text-moss-deep">A field guide to confidential CVM integrations</h1>
-    <p class="mt-3 max-w-2xl text-ink-muted">
+  <main class="mx-auto max-w-5xl px-6 py-12">
+    <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-moss">open registry · intake → certify → list</p>
+    <h1 class="mt-3 max-w-3xl font-serif text-5xl leading-[1.05] text-ink">A field guide to confidential CVM integrations</h1>
+    <p class="mt-4 max-w-2xl text-ink-body">
       Each specimen is an open-source workload packaged to draw the confidential boundary correctly — and a
-      <strong>reproducible build whose measurement anyone can independently verify</strong>. Listing is
-      permissionless; the value is the certification on top. <a href="/compare" class="text-moss-deep underline">Compare</a>
-      · <a href="/learn" class="text-moss-deep underline">Learn</a>
+      <strong class="text-ink">reproducible build whose measurement anyone can independently verify</strong>.
+      Listing is permissionless; the value is the certification on top.
     </p>
+    <div class="mt-5 flex flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] text-ink-dim">
+      <span><span class="text-moss">{guarded}</span> guarded</span>
+      <span><span class="text-ink">{integrations.length}</span> listed</span>
+      <span>measurement = dstack compose-hash · <a href="/learn/reproducible-builds" class="tk-link">rebuild it yourself</a></span>
+    </div>
 
-    <div class="mt-6"><CatalogFilter client:load facets={facets} /></div>
-    <p class="mt-3 font-mono text-xs text-ink-muted"><span id="filter-count">{integrations.length}</span> of {integrations.length} specimens</p>
+    <div class="mt-8"><CatalogFilter client:load facets={facets} /></div>
+    <p class="mt-3 font-mono text-[11px] text-ink-dim"><span id="filter-count">{integrations.length}</span> of {integrations.length} specimens</p>
 
-    <ul class="mt-4 grid gap-4 sm:grid-cols-2">
-      {integrations.map((i) => (
-        <li
-          data-card
-          data-category={i.category}
-          data-tier={i.tier}
-          data-proof={i.proofTier}
-          data-fresh={i.freshness}
-          class="rounded-lg border border-rule bg-card p-5"
-        >
-          <a href={`/specimens/${i.id}`} class="block">
-            <div class="flex items-baseline justify-between">
-              <span class="font-serif text-xl text-moss-deep">{i.commonName}</span>
-              <span class={`font-mono text-xs uppercase tier-${i.tier}`}>{i.tier}</span>
-            </div>
-            <div class="mt-1 font-mono text-sm text-ink-body">{i.id}</div>
-            <p class="mt-2 text-sm text-ink-muted">{i.fieldGuide.description}</p>
-            <div class="mt-3 font-mono text-xs text-ink-muted">
-              <a href={`/categories/${i.category}`} class="hover:text-moss-deep">{CATEGORY_LABEL[i.category] ?? i.category}</a>
-              · {i.proofTier} · {i.freshness} · {i.latestBuild.measurement.value.slice(0, 12)}…
-            </div>
-          </a>
-        </li>
-      ))}
+    <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+      {integrations.map((i) => <SpecimenCard i={i} />)}
     </ul>
   </main>
 </BaseLayout>

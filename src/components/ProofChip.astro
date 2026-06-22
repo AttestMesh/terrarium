@@ -1,0 +1,13 @@
+---
+interface Props { proof: "sealed" | "accountable" | "open" }
+const { proof } = Astro.props;
+const COLOR = {
+  sealed: "var(--color-moss)",
+  accountable: "var(--color-blue)",
+  open: "var(--color-ink-dim)",
+} as const;
+---
+
+<span class="inline-flex items-center gap-1.5 font-mono text-[0.6rem] uppercase tracking-[0.08em]" style={`color:${COLOR[proof]}`}>
+  <span class="tk-dot" style={`--c:${COLOR[proof]}`}></span>{proof}
+</span>

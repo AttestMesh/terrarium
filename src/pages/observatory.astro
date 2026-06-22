@@ -18,9 +18,10 @@ const pctFresh = snap && snap.counts.total ? Math.round((100 * snap.counts.fresh
   description="A time-series over the Terrarium catalog: guarded (attested) integrations, tier mix, % fresh, and churn. Lead metrics are cryptographically attested, not self-reported."
 >
   <main class="mx-auto max-w-3xl px-6 py-10">
-    <nav aria-label="Breadcrumb" class="font-mono text-xs text-ink-muted"><a href="/" class="hover:text-moss-deep">Home</a> › Observatory</nav>
-    <h1 class="mt-2 font-serif text-3xl text-moss-deep">Observatory</h1>
-    <p class="mt-2 max-w-2xl text-ink-muted">The numbers a registry can only show if it keeps snapshots — most overwrite and can't.</p>
+    <nav aria-label="Breadcrumb" class="font-mono text-[11px] text-ink-dim"><a href="/" class="hover:text-moss">Home</a> › Observatory</nav>
+    <p class="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-moss">state of confidential computing</p>
+    <h1 class="mt-2 font-serif text-4xl text-ink">Observatory</h1>
+    <p class="mt-2 max-w-2xl text-ink-body">The numbers a registry can only show if it keeps snapshots — most overwrite and can't.</p>
 
     {snap ? (
       <div class="mt-6 space-y-4">

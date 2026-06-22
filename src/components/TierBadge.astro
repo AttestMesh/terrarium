@@ -1,0 +1,12 @@
+---
+interface Props { tier: "raw" | "beta" | "guarded" }
+const { tier } = Astro.props;
+const MAP = {
+  guarded: { glyph: "✓", color: "var(--color-moss)" },
+  beta: { glyph: "◐", color: "var(--color-amber)" },
+  raw: { glyph: "○", color: "var(--color-ink-muted)" },
+} as const;
+const t = MAP[tier];
+---
+
+<span class="tk-chip" style={`--c:${t.color}`}>{t.glyph} {tier}</span>

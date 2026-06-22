@@ -1,5 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Panel from "../../components/Panel.astro";
+import TierBadge from "../../components/TierBadge.astro";
+import ProofChip from "../../components/ProofChip.astro";
 import BoundaryTable from "../../components/inspector/BoundaryTable.astro";
 import CopyButton from "../../components/islands/CopyButton.svelte";
 import { allIntegrations, getIntegration, CATEGORY_LABEL, TIER_BLURB } from "../../lib/catalog.ts";
@@ -13,7 +16,6 @@ const i = getIntegration(id!)!;
 const b = i.latestBuild;
 const measurementInvalid = i.freshness === "cve";
 
-// The exact consumer resolve target, shown verbatim (== GET /catalog/:id).
 const resolve = {
   imageRef: b.imageRef,
   measurement: b.measurement,
@@ -46,139 +48,156 @@ const software = {
   codeRepository: `https://${b.source.repo}`,
 };
 
-// lore field → backing inspector anchor (clicking a lore field opens its proof)
-const proof = (anchor: string) => `#${anchor}`;
+const lore: [string, string, string][] = [
+  ["habitat", i.lore.habitat, ""],
+  ["diet", i.lore.diet.join(", "), ""],
+  ["markings", i.lore.markings, "#measurement"],
+];
 ---
 
 <BaseLayout title={i.seo.title} description={i.seo.metaDescription} jsonLd={[breadcrumb, software]}>
   <main class="mx-auto max-w-4xl px-6 py-8">
-    <nav aria-label="Breadcrumb" class="font-mono text-xs text-ink-muted">
-      <a href="/" class="hover:text-moss-deep">Home</a> ›
-      <a href={`/categories/${i.category}`} class="hover:text-moss-deep">{CATEGORY_LABEL[i.category] ?? i.category}</a> ›
-      <span>{i.id}</span>
+    <nav aria-label="Breadcrumb" class="font-mono text-[11px] text-ink-dim">
+      <a href="/" class="hover:text-moss">Home</a> ›
+      <a href={`/categories/${i.category}`} class="hover:text-moss">{CATEGORY_LABEL[i.category] ?? i.category}</a> ›
+      <span class="text-ink-muted">{i.id}</span>
     </nav>
 
     {measurementInvalid && (
-      <div class="mt-4 rounded border border-danger bg-card p-3 font-mono text-sm text-danger">
+      <div class="mt-4 border border-danger/60 bg-danger/10 p-3 font-mono text-sm text-danger">
         ⚠ measurement may be invalid — a known upstream CVE affects the certified build. Do not deploy without review.
       </div>
     )}
 
     <!-- FIELD-GUIDE REGISTER -->
-    <header class="mt-4">
-      <div class="flex items-start justify-between gap-6">
+    <header class="mt-5 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+      <div class="flex items-start gap-5">
+        <div class="tk-panel grid h-20 w-20 shrink-0 place-items-center bg-surface">
+          <span class="tk-corner tl"></span><span class="tk-corner tr"></span>
+          <span class="tk-corner bl"></span><span class="tk-corner br"></span>
+          <span class="font-serif text-3xl text-moss">{i.commonName.replace(/^The\s+/i, "").charAt(0)}</span>
+        </div>
         <div>
-          <h1 class="font-serif text-4xl text-moss-deep">{i.seo.h1}</h1>
-          <p class="mt-1 font-mono text-sm text-ink-muted">
-            <a href={`/categories/${i.category}`} class="hover:text-moss-deep">{CATEGORY_LABEL[i.category] ?? i.category}</a>
-            · {i.role}
+          <h1 class="font-serif text-4xl leading-tight text-ink">{i.seo.h1}</h1>
+          <p class="mt-1 font-mono text-xs text-ink-muted">
+            <span class="text-ink-dim">PLATE · {i.id}</span> ·
+            <a href={`/categories/${i.category}`} class="hover:text-moss">{CATEGORY_LABEL[i.category] ?? i.category}</a> · {i.role}
           </p>
         </div>
-        <!-- tier + freshness ABOVE THE FOLD -->
-        <div class="shrink-0 text-right">
-          <div class={`font-mono text-lg uppercase tier-${i.tier}`}>{i.tier}</div>
-          <div class="font-mono text-xs text-ink-muted">{i.proofTier} · {i.freshness}</div>
-        </div>
       </div>
-      <p class="mt-4 max-w-2xl text-lg">{i.fieldGuide.description}</p>
-      <p class="mt-2 max-w-2xl italic text-ink-muted">“{i.fieldGuide.fieldNote}”</p>
+      <div class="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end">
+        <TierBadge tier={i.tier} />
+        <ProofChip proof={i.proofTier} />
+        <span class="font-mono text-[11px] text-ink-dim">{i.freshness}</span>
+      </div>
     </header>
 
-    <section class="mt-6 grid gap-4 sm:grid-cols-2">
-      <dl class="rounded-lg border border-rule bg-card p-4 text-sm">
-        <div class="flex justify-between"><dt class="text-ink-muted">Habitat</dt><dd>{i.lore.habitat}</dd></div>
-        <div class="mt-2"><dt class="text-ink-muted">Diet</dt><dd class="font-mono text-xs">{i.lore.diet.join(", ")}</dd></div>
-        <div class="mt-2">
-          <dt class="text-ink-muted">Markings <a href={proof("measurement")} class="text-moss">↪ proof</a></dt>
-          <dd class="font-mono text-xs">{i.lore.markings}</dd>
-        </div>
-      </dl>
-      <div class="rounded-lg border border-rule bg-card p-4 text-sm">
-        <div class="text-ink-muted">Natural predators <a href={proof("boundary")} class="text-moss">↪ threat model</a></div>
-        <ul class="mt-1 list-disc pl-5 text-ink-body">
-          {i.lore.predators.map((p) => <li>{p}</li>)}
+    <p class="mt-5 max-w-2xl text-lg text-ink-body">{i.fieldGuide.description}</p>
+    <p class="mt-2 max-w-2xl border-l-2 border-moss/50 pl-3 font-serif text-lg italic text-ink-muted">{i.fieldGuide.fieldNote}</p>
+
+    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+      <Panel title="field notes" pad={true}>
+        <dl class="space-y-2 text-sm">
+          {lore.map(([label, value, anchor]) => (
+            <div>
+              <dt class="font-mono text-[11px] uppercase tracking-wider text-ink-muted">
+                {label}{anchor && <a href={anchor} class="ml-1 text-moss">↪ proof</a>}
+              </dt>
+              <dd class="font-mono text-xs text-ink-body">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </Panel>
+      <Panel title="natural predators" code="threat model" pad={true}>
+        <ul class="space-y-1 text-sm text-ink-body">
+          {i.lore.predators.map((p) => <li class="flex gap-2"><span class="text-danger">▸</span>{p}</li>)}
         </ul>
-      </div>
-    </section>
+        <a href="#boundary" class="mt-2 inline-block font-mono text-[11px] text-moss">↪ the seal it evolved</a>
+      </Panel>
+    </div>
 
     <!-- INSPECTOR REGISTER -->
-    <hr class="my-10 border-rule" />
-    <h2 class="font-serif text-2xl text-ink-body">The record</h2>
+    <div class="mt-12 flex items-center gap-3">
+      <h2 class="font-mono text-xs uppercase tracking-[0.2em] text-moss">The record</h2>
+      <span class="h-px flex-1 bg-rule"></span>
+      <span class="font-mono text-[11px] text-ink-dim">verified · not authored</span>
+    </div>
 
-    <section id="measurement" class="mt-5">
-      <h3 class="font-mono text-sm uppercase text-ink-muted">Measurement <span class="lowercase">(the trust anchor)</span></h3>
-      <div class="mt-2 flex flex-wrap items-center gap-3">
-        <code class="break-all rounded bg-page px-2 py-1 font-mono text-sm">{b.measurement.kind}:{b.measurement.value}</code>
-        <CopyButton client:idle text={b.measurement.value} label="Copy hash" />
-      </div>
-      <p class="mt-2 font-mono text-xs text-ink-muted">
-        Reproducible: {b.reproducible ? "yes" : "no"} — {b.rebuilders} rebuilders agree. Rebuild it yourself from the
-        pinned recipe; our CI is one rebuilder among many, never the oracle.
-      </p>
-    </section>
-
-    <section id="boundary" class="mt-8">
-      <h3 class="font-mono text-sm uppercase text-ink-muted">Boundary spec</h3>
-      <div class="mt-2"><BoundaryTable boundary={b.boundarySpec} /></div>
-    </section>
-
-    <section id="signers" class="mt-8">
-      <h3 class="font-mono text-sm uppercase text-ink-muted">Signers — attestations over THIS measurement</h3>
-      {i.attestations.length === 0 ? (
-        <p class="mt-2 text-sm text-ink-muted">
-          None. Tier <span class={`tier-${i.tier}`}>{i.tier}</span> — {TIER_BLURB[i.tier]}.
-          A reviewer signature over this exact measurement would raise it to <span class="tier-guarded">guarded</span>;
-          guarded is per-measurement and is re-earned on every rebuild.
+    <div class="mt-5 space-y-4">
+      <Panel id="measurement" title="measurement" code="the trust anchor">
+        <div class="flex flex-wrap items-center gap-3">
+          <code class="break-all bg-page px-2 py-1 font-mono text-sm text-moss">{b.measurement.kind}:{b.measurement.value}</code>
+          <CopyButton client:idle text={b.measurement.value} label="copy hash" />
+        </div>
+        <p class="mt-3 font-mono text-[11px] leading-relaxed text-ink-muted">
+          reproducible: <span class="text-ink-body">{b.reproducible ? "yes" : "no"}</span> — {b.rebuilders} rebuilders agree.
+          Rebuild it yourself from the pinned recipe; our CI is one rebuilder among many, never the oracle.
         </p>
-      ) : (
-        <ul class="mt-2 space-y-1 text-sm">
-          {i.attestations.map((a) => (
-            <li class="font-mono text-xs">{a.reviewerId} · {a.scope} · {a.status}</li>
-          ))}
-        </ul>
-      )}
-    </section>
+      </Panel>
 
-    <section id="source" class="mt-8">
-      <h3 class="font-mono text-sm uppercase text-ink-muted">Source &amp; freshness</h3>
-      <table class="mt-2 w-full border-collapse font-mono text-sm">
-        <tbody>
-          <tr class="border-b border-rule"><th class="w-48 py-2 pr-4 text-left text-ink-muted">repo</th><td class="py-2 break-all">{b.source.repo}</td></tr>
-          <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">pinned ref</th><td class="py-2">{b.source.ref}</td></tr>
-          <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">recipe</th><td class="py-2">{b.source.recipe}</td></tr>
-          <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">image</th><td class="py-2 break-all">{b.imageRef}</td></tr>
-          <tr><th class="py-2 pr-4 text-left text-ink-muted">freshness</th><td class="py-2">{i.freshness} · certified {b.upstreamRef}</td></tr>
-        </tbody>
-      </table>
+      <Panel id="boundary" title="boundary spec" code="where the wall is" pad={true}>
+        <BoundaryTable boundary={b.boundarySpec} />
+      </Panel>
 
-      <h4 class="mt-5 font-mono text-xs uppercase text-ink-muted">Version history — a rebuild is a new measurement</h4>
-      <table class="mt-2 w-full border-collapse font-mono text-xs">
-        <thead>
-          <tr class="border-b border-rule text-ink-muted">
-            <th class="py-1 pr-4 text-left">version</th><th class="py-1 pr-4 text-left">measurement</th>
-            <th class="py-1 pr-4 text-left">built</th><th class="py-1 text-left">freshness</th>
-          </tr>
-        </thead>
-        <tbody>
-          {i.versions.map((v) => (
-            <tr class="border-b border-rule">
-              <td class="py-1 pr-4">{v.version}{v.isLatest ? " · latest" : ""}</td>
-              <td class="py-1 pr-4 break-all">{v.measurement.value.slice(0, 16)}…</td>
-              <td class="py-1 pr-4">{v.builtAt.slice(0, 10)}</td>
-              <td class="py-1">{v.freshness}</td>
+      <Panel id="signers" title="signers" code="attestations over this measurement" pad={true}>
+        {i.attestations.length === 0 ? (
+          <p class="text-sm text-ink-muted">
+            None. Tier <span class={`tier-${i.tier}`}>{i.tier}</span> — {TIER_BLURB[i.tier]}. A reviewer signature over
+            this exact measurement raises it to <span class="text-moss">guarded</span>; guarded is per-measurement and is
+            re-earned on every rebuild.
+          </p>
+        ) : (
+          <ul class="space-y-2">
+            {i.attestations.map((a) => (
+              <li class="flex flex-wrap items-center gap-3 font-mono text-xs">
+                <span class="tk-chip" style="--c:var(--color-moss)">✓ {a.reviewerId}</span>
+                <span class="text-ink-muted">{a.scope}</span>
+                <span class="text-ink-dim">· {a.status} · {a.issuedAt.slice(0, 10)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Panel>
+
+      <Panel id="source" title="source & freshness" code="rebuild it yourself" pad={true}>
+        <table class="w-full border-collapse font-mono text-sm">
+          <tbody>
+            <tr class="border-b border-rule"><th class="w-40 py-2 pr-4 text-left text-ink-muted">repo</th><td class="py-2 break-all text-ink-body">{b.source.repo}</td></tr>
+            <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">pinned ref</th><td class="py-2 text-ink-body">{b.source.ref}</td></tr>
+            <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">recipe</th><td class="py-2 text-ink-body">{b.source.recipe}</td></tr>
+            <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">image</th><td class="py-2 break-all text-ink-body">{b.imageRef}</td></tr>
+            <tr><th class="py-2 pr-4 text-left text-ink-muted">freshness</th><td class="py-2 text-ink-body">{i.freshness} · certified {b.upstreamRef}</td></tr>
+          </tbody>
+        </table>
+
+        <h4 class="mt-5 font-mono text-[11px] uppercase tracking-wider text-ink-muted">Version history — a rebuild is a new measurement</h4>
+        <table class="mt-2 w-full border-collapse font-mono text-xs">
+          <thead>
+            <tr class="border-b border-rule text-ink-dim">
+              <th class="py-1 pr-4 text-left">version</th><th class="py-1 pr-4 text-left">measurement</th>
+              <th class="py-1 pr-4 text-left">built</th><th class="py-1 text-left">freshness</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
+          </thead>
+          <tbody>
+            {i.versions.map((v) => (
+              <tr class="border-b border-rule text-ink-body">
+                <td class="py-1 pr-4">{v.version}{v.isLatest ? " · latest" : ""}</td>
+                <td class="py-1 pr-4 break-all text-ink-muted">{v.measurement.value.slice(0, 16)}…</td>
+                <td class="py-1 pr-4">{v.builtAt.slice(0, 10)}</td>
+                <td class="py-1">{v.freshness}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Panel>
 
-    <section id="resolve" class="mt-8">
-      <h3 class="font-mono text-sm uppercase text-ink-muted">Resolve target <span class="lowercase">(what a consumer reads at deploy)</span></h3>
-      <div class="mt-2 flex items-center gap-3">
-        <a href={`/catalog/${i.id}.json`} class="font-mono text-xs text-moss-deep underline">GET /catalog/{i.id}.json</a>
-        <CopyButton client:idle text={JSON.stringify(resolve, null, 2)} label="Copy resolve JSON" />
-      </div>
-      <pre class="mt-2 overflow-x-auto rounded bg-page p-3 font-mono text-xs"><code>{JSON.stringify(resolve, null, 2)}</code></pre>
-    </section>
+      <Panel id="resolve" title="resolve target" code="what a consumer reads at deploy">
+        <div class="flex items-center gap-3">
+          <a href={`/catalog/${i.id}.json`} class="tk-link font-mono text-xs">GET /catalog/{i.id}.json</a>
+          <CopyButton client:idle text={JSON.stringify(resolve, null, 2)} label="copy resolve json" />
+        </div>
+        <pre class="mt-3 overflow-x-auto bg-page p-3 font-mono text-xs leading-relaxed text-ink-body"><code>{JSON.stringify(resolve, null, 2)}</code></pre>
+      </Panel>
+    </div>
   </main>
 </BaseLayout>

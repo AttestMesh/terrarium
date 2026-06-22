@@ -1,0 +1,22 @@
+---
+interface Props {
+  title?: string;
+  code?: string;
+  id?: string;
+  pad?: boolean;
+  class?: string;
+}
+const { title, code, id, pad = true, class: klass = "" } = Astro.props;
+---
+
+<section id={id} class={`tk-panel ${klass}`}>
+  <span class="tk-corner tl"></span><span class="tk-corner tr"></span>
+  <span class="tk-corner bl"></span><span class="tk-corner br"></span>
+  {title && (
+    <header class="tk-panel-head">
+      <span class="tk-panel-title">{title}</span>
+      {code && <span class="tk-panel-code">{code}</span>}
+    </header>
+  )}
+  <div class={pad ? "p-4" : ""}><slot /></div>
+</section>
