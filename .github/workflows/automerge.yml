@@ -1,0 +1,37 @@
+# Enable GitHub auto-merge for a purely-additive new-specimen PR once pr-gates is
+# green. This only *requests* auto-merge — the actual safety gate is branch
+# protection on main (require the `converge` check + CODEOWNERS review). A PR that
+# edits .github/, cli/, src/, reviewers/, builds/, or log/ fails scope-guard and is
+# CODEOWNERS-protected, so it can never auto-merge. See docs/ci-and-branch-protection.md.
+#
+# TODO: pin every `uses:` to a commit SHA.
+name: automerge
+
+on:
+  workflow_run:
+    workflows: [pr-gates]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          PR=$(gh pr list --repo "$REPO" --state open --json number,headRefOid \
+                 --jq ".[] | select(.headRefOid==\"$SHA\") | .number")
+          if [ -n "${PR:-}" ]; then
+            echo "enabling auto-merge for PR #$PR"
+            gh pr merge "$PR" --repo "$REPO" --auto --squash
+          else
+            echo "no open PR for $SHA"
+          fi

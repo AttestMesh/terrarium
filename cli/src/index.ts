@@ -1,10 +1,13 @@
 #!/usr/bin/env -S npx tsx
 import { writeFileSync, mkdirSync, chmodSync } from "node:fs";
+import { execSync } from "node:child_process";
 import { join } from "node:path";
 import { readSpecimen, listSpecimenIds, dir } from "./io.ts";
 import { honestyLint } from "./lint/honesty.ts";
 import { boundaryLint } from "./lint/boundary.ts";
 import { gate0 } from "./gate0.ts";
+import { measure } from "./measurement.ts";
+import { checkScope, parseNameStatus } from "./scope-check.ts";
 import { attest } from "./attest.ts";
 import { genLog, verifyLog } from "./gen-log.ts";
 import { buildIndex } from "./build-index.ts";
@@ -51,6 +54,25 @@ switch (cmd) {
     console.log(`gate0 ${arg}: ${b.measurement.value} (${b.rebuilders} rebuilders) → builds/${arg}/${b.version}.json`);
     break;
   }
+  case "measure": {
+    // compute-only (no write) — each CI rebuilder prints its value; converge compares
+    if (!arg) throw new Error("usage: terrarium measure <id>");
+    process.stdout.write(measure(arg, readSpecimen(arg).recipeText).value + "\n");
+    break;
+  }
+  case "scope-check": {
+    // path-scoped auto-merge guard against the PR base; exit 1 if not a purely-additive new specimen
+    const base = arg === "--base" ? arg2 : arg;
+    if (!base) throw new Error("usage: terrarium scope-check <baseSha>");
+    const diff = execSync(`git diff --name-status ${base}...HEAD`, { encoding: "utf8" });
+    const r = checkScope(parseNameStatus(diff));
+    if (r.ok) console.log(`scope-check: ok — purely-additive new specimen "${r.id}"`);
+    else {
+      console.error(`scope-check: ${r.reason}`);
+      process.exit(1);
+    }
+    break;
+  }
   case "keygen":
     if (!arg) throw new Error("usage: terrarium keygen <name>");
     keygen(arg);
@@ -83,6 +105,8 @@ switch (cmd) {
     break;
   }
   default:
-    console.error("usage: terrarium <validate|gate0|keygen|attest|gen-log|verify-log|build-index|gen-api> [args]");
+    console.error(
+      "usage: terrarium <validate|gate0|measure|scope-check|keygen|attest|gen-log|verify-log|build-index|gen-api> [args]",
+    );
     process.exit(2);
 }

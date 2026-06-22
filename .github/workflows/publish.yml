@@ -1,0 +1,39 @@
+# Publish the static catalog + read-API to GitHub Pages on merge to main. Runs ONLY
+# our own code over already-merged, vetted content. It builds from the committed
+# builds/ + log/ (no signing keys in CI in v1 — certification is a maintainer action
+# committed via a CODEOWNERS-gated PR), so the only credential here is Pages deploy.
+#
+# TODO: pin every `uses:` to a commit SHA.
+name: publish
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm ci
+      - name: build site + static read-API
+        run: npm run build
+        env:
+          TERRARIUM_SITE: ${{ vars.TERRARIUM_SITE }}
+      - name: verify the signed measurement log
+        run: npx tsx cli/src/index.ts verify-log
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: dist }
+      - uses: actions/deploy-pages@v4

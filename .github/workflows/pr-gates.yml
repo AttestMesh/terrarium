@@ -1,0 +1,99 @@
+# Gate 0 + Gate 1 on the PR. The load-bearing security property: this entire
+# workflow is triggered by `pull_request` (NEVER pull_request_target) and holds
+# `contents: read` with NO secrets — so even arbitrary code in a submitted recipe
+# has nothing to steal. Worst case is wasted compute. The trust anchor is made
+# adversarial (≥2 independent rebuilders must converge), never an oracle's word.
+#
+# TODO before enabling auto-merge: pin every `uses:` to a commit SHA (tags shown).
+name: pr-gates
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths: ["specimens/**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-gates-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  # 0 · cheap gate: the PR must be purely additive under one new specimens/<id>/
+  scope-guard:
+    runs-on: ubuntu-latest
+    permissions: { contents: read }
+    timeout-minutes: 5
+    outputs:
+      id: ${{ steps.scope.outputs.id }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm ci --ignore-scripts
+      - id: scope
+        run: |
+          set -euo pipefail
+          OUT=$(npx tsx cli/src/index.ts scope-check "${{ github.event.pull_request.base.sha }}")
+          echo "$OUT"
+          echo "id=$(echo "$OUT" | sed -n 's/.*new specimen "\(.*\)".*/\1/p')" >> "$GITHUB_OUTPUT"
+
+  # 1 · Gate 1 — schema + boundary + honesty lints
+  gate1-lint:
+    needs: scope-guard
+    runs-on: ubuntu-latest
+    permissions: { contents: read }
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm ci --ignore-scripts
+      - run: npx tsx cli/src/index.ts validate "specimens/${{ needs.scope-guard.outputs.id }}"
+
+  # 2 · Gate 0 — reproduce on ≥2 independent rebuilders (different runner images)
+  reproduce:
+    needs: scope-guard
+    permissions: { contents: read }
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-22.04]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: npm ci --ignore-scripts
+      # For a digest-pinned compose recipe the measurement is a pure function of the
+      # committed bytes; an env-dependent recipe diverges across runners and fails.
+      # (For Dockerfile recipes, add a `docker buildx build --network=none` step here
+      #  fed by a prior digest-prefetch phase — see docs.)
+      - name: compute measurement (this rebuilder)
+        run: npx tsx cli/src/index.ts measure "${{ needs.scope-guard.outputs.id }}" | tee measurement.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: measurement-${{ matrix.runner }}
+          path: measurement.txt
+
+  # 3 · converge — the single required status check for branch protection
+  converge:
+    needs: [scope-guard, reproduce]
+    runs-on: ubuntu-latest
+    permissions: { contents: read }
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: reports, pattern: "measurement-*" }
+      - name: assert ≥2 rebuilders converge on one measurement
+        run: |
+          set -euo pipefail
+          COUNT=$(find reports -name measurement.txt | wc -l)
+          UNIQ=$(cat reports/*/measurement.txt | sort -u | wc -l)
+          echo "rebuilders=$COUNT unique-measurements=$UNIQ"
+          test "$COUNT" -ge 2 || { echo "::error::fewer than 2 rebuilders reported"; exit 1; }
+          test "$UNIQ" -eq 1 || { echo "::error::rebuilders diverged — env-dependent recipe, not reproducible"; exit 1; }
+          echo "converged measurement: $(sort -u reports/*/measurement.txt)"
