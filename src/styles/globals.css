@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/* Field-guide palette — a naturalist's plate: aged paper, ink, herbarium green. */
+@theme {
+  --color-page: #f6f3ea;
+  --color-card: #fffdf7;
+  --color-ink-body: #2b2a26;
+  --color-ink-muted: #6b6760;
+  --color-rule: #d8d2c2;
+  --color-moss: #3f6f52;
+  --color-moss-deep: #2c4f3a;
+  --color-amber: #b4791f;
+  --color-danger: #9a3b2f;
+
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
+/* Tier accents — derived, never authored. */
+.tier-raw { color: var(--color-ink-muted); }
+.tier-beta { color: var(--color-amber); }
+.tier-guarded { color: var(--color-moss-deep); }

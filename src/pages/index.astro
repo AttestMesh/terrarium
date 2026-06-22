@@ -1,0 +1,50 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { allIntegrations, byCategory, CATEGORY_LABEL } from "../lib/catalog.ts";
+
+const integrations = allIntegrations();
+const groups = [...byCategory().entries()];
+const title = "Terrarium — a field guide to confidential CVM integrations";
+const description =
+  "An open registry of guarded, reproducible, confidential CVM integrations. Each specimen reproduces to a verifiable measurement and ships a certified confidential boundary.";
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="mx-auto max-w-5xl px-6 py-10">
+    <h1 class="font-serif text-4xl text-moss-deep">A field guide to confidential CVM integrations</h1>
+    <p class="mt-3 max-w-2xl text-ink-muted">
+      Each specimen is an open-source workload packaged to draw the confidential boundary correctly — and a
+      <strong>reproducible build whose measurement anyone can independently verify</strong>. Listing is
+      permissionless; the value is the certification on top.
+    </p>
+
+    {groups.map(([category, members]) => (
+      <section class="mt-10">
+        <h2 class="font-serif text-2xl text-ink-body">
+          <a href={`/categories/${category}`} class="hover:text-moss-deep">{CATEGORY_LABEL[category] ?? category}</a>
+        </h2>
+        <ul class="mt-4 grid gap-4 sm:grid-cols-2">
+          {members.map((i) => (
+            <li class="rounded-lg border border-rule bg-card p-5">
+              <a href={`/specimens/${i.id}`} class="block">
+                <div class="flex items-baseline justify-between">
+                  <span class="font-serif text-xl text-moss-deep">{i.commonName}</span>
+                  <span class={`font-mono text-xs uppercase tier-${i.tier}`}>{i.tier}</span>
+                </div>
+                <div class="mt-1 font-mono text-sm text-ink-body">{i.id}</div>
+                <p class="mt-2 text-sm text-ink-muted">{i.fieldGuide.description}</p>
+                <div class="mt-3 font-mono text-xs text-ink-muted">
+                  {i.proofTier} · {i.freshness} · measurement {i.latestBuild.measurement.value.slice(0, 12)}…
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+
+    <p class="mt-12 font-mono text-xs text-ink-muted">
+      {integrations.length} specimen{integrations.length === 1 ? "" : "s"} listed.
+    </p>
+  </main>
+</BaseLayout>

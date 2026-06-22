@@ -1,0 +1,164 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import BoundaryTable from "../../components/inspector/BoundaryTable.astro";
+import CopyButton from "../../components/islands/CopyButton.svelte";
+import { allIntegrations, getIntegration, CATEGORY_LABEL, TIER_BLURB } from "../../lib/catalog.ts";
+
+export function getStaticPaths() {
+  return allIntegrations().map((i) => ({ params: { id: i.id } }));
+}
+
+const { id } = Astro.params;
+const i = getIntegration(id!)!;
+const b = i.latestBuild;
+const measurementInvalid = i.freshness === "cve";
+
+// The exact consumer resolve target, shown verbatim (== GET /catalog/:id).
+const resolve = {
+  imageRef: b.imageRef,
+  measurement: b.measurement,
+  boundarySpec: b.boundarySpec,
+  attestations: i.attestations,
+  tier: i.tier,
+  proofTier: i.proofTier,
+  freshness: i.freshness,
+  publisher: i.publisher,
+};
+
+const home = new URL("/", Astro.site).href;
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: home },
+    { "@type": "ListItem", position: 2, name: CATEGORY_LABEL[i.category] ?? i.category, item: new URL(`/categories/${i.category}`, Astro.site).href },
+    { "@type": "ListItem", position: 3, name: i.id },
+  ],
+};
+const software = {
+  "@context": "https://schema.org",
+  "@type": ["SoftwareApplication", "SoftwareSourceCode"],
+  name: i.commonName,
+  applicationCategory: i.category,
+  operatingSystem: "Intel TDX (dstack)",
+  softwareVersion: b.version,
+  description: i.fieldGuide.description,
+  codeRepository: `https://${b.source.repo}`,
+};
+
+// lore field → backing inspector anchor (clicking a lore field opens its proof)
+const proof = (anchor: string) => `#${anchor}`;
+---
+
+<BaseLayout title={i.seo.title} description={i.seo.metaDescription} jsonLd={[breadcrumb, software]}>
+  <main class="mx-auto max-w-4xl px-6 py-8">
+    <nav aria-label="Breadcrumb" class="font-mono text-xs text-ink-muted">
+      <a href="/" class="hover:text-moss-deep">Home</a> ›
+      <a href={`/categories/${i.category}`} class="hover:text-moss-deep">{CATEGORY_LABEL[i.category] ?? i.category}</a> ›
+      <span>{i.id}</span>
+    </nav>
+
+    {measurementInvalid && (
+      <div class="mt-4 rounded border border-danger bg-card p-3 font-mono text-sm text-danger">
+        ⚠ measurement may be invalid — a known upstream CVE affects the certified build. Do not deploy without review.
+      </div>
+    )}
+
+    <!-- FIELD-GUIDE REGISTER -->
+    <header class="mt-4">
+      <div class="flex items-start justify-between gap-6">
+        <div>
+          <h1 class="font-serif text-4xl text-moss-deep">{i.seo.h1}</h1>
+          <p class="mt-1 font-mono text-sm text-ink-muted">
+            <a href={`/categories/${i.category}`} class="hover:text-moss-deep">{CATEGORY_LABEL[i.category] ?? i.category}</a>
+            · {i.role}
+          </p>
+        </div>
+        <!-- tier + freshness ABOVE THE FOLD -->
+        <div class="shrink-0 text-right">
+          <div class={`font-mono text-lg uppercase tier-${i.tier}`}>{i.tier}</div>
+          <div class="font-mono text-xs text-ink-muted">{i.proofTier} · {i.freshness}</div>
+        </div>
+      </div>
+      <p class="mt-4 max-w-2xl text-lg">{i.fieldGuide.description}</p>
+      <p class="mt-2 max-w-2xl italic text-ink-muted">“{i.fieldGuide.fieldNote}”</p>
+    </header>
+
+    <section class="mt-6 grid gap-4 sm:grid-cols-2">
+      <dl class="rounded-lg border border-rule bg-card p-4 text-sm">
+        <div class="flex justify-between"><dt class="text-ink-muted">Habitat</dt><dd>{i.lore.habitat}</dd></div>
+        <div class="mt-2"><dt class="text-ink-muted">Diet</dt><dd class="font-mono text-xs">{i.lore.diet.join(", ")}</dd></div>
+        <div class="mt-2">
+          <dt class="text-ink-muted">Markings <a href={proof("measurement")} class="text-moss">↪ proof</a></dt>
+          <dd class="font-mono text-xs">{i.lore.markings}</dd>
+        </div>
+      </dl>
+      <div class="rounded-lg border border-rule bg-card p-4 text-sm">
+        <div class="text-ink-muted">Natural predators <a href={proof("boundary")} class="text-moss">↪ threat model</a></div>
+        <ul class="mt-1 list-disc pl-5 text-ink-body">
+          {i.lore.predators.map((p) => <li>{p}</li>)}
+        </ul>
+      </div>
+    </section>
+
+    <!-- INSPECTOR REGISTER -->
+    <hr class="my-10 border-rule" />
+    <h2 class="font-serif text-2xl text-ink-body">The record</h2>
+
+    <section id="measurement" class="mt-5">
+      <h3 class="font-mono text-sm uppercase text-ink-muted">Measurement <span class="lowercase">(the trust anchor)</span></h3>
+      <div class="mt-2 flex flex-wrap items-center gap-3">
+        <code class="break-all rounded bg-page px-2 py-1 font-mono text-sm">{b.measurement.kind}:{b.measurement.value}</code>
+        <CopyButton client:idle text={b.measurement.value} label="Copy hash" />
+      </div>
+      <p class="mt-2 font-mono text-xs text-ink-muted">
+        Reproducible: {b.reproducible ? "yes" : "no"} — {b.rebuilders} rebuilders agree. Rebuild it yourself from the
+        pinned recipe; our CI is one rebuilder among many, never the oracle.
+      </p>
+    </section>
+
+    <section id="boundary" class="mt-8">
+      <h3 class="font-mono text-sm uppercase text-ink-muted">Boundary spec</h3>
+      <div class="mt-2"><BoundaryTable boundary={b.boundarySpec} /></div>
+    </section>
+
+    <section id="signers" class="mt-8">
+      <h3 class="font-mono text-sm uppercase text-ink-muted">Signers — attestations over THIS measurement</h3>
+      {i.attestations.length === 0 ? (
+        <p class="mt-2 text-sm text-ink-muted">
+          None. Tier <span class={`tier-${i.tier}`}>{i.tier}</span> — {TIER_BLURB[i.tier]}.
+          A reviewer signature over this exact measurement would raise it to <span class="tier-guarded">guarded</span>;
+          guarded is per-measurement and is re-earned on every rebuild.
+        </p>
+      ) : (
+        <ul class="mt-2 space-y-1 text-sm">
+          {i.attestations.map((a) => (
+            <li class="font-mono text-xs">{a.reviewerId} · {a.scope} · {a.status}</li>
+          ))}
+        </ul>
+      )}
+    </section>
+
+    <section id="source" class="mt-8">
+      <h3 class="font-mono text-sm uppercase text-ink-muted">Source &amp; freshness</h3>
+      <table class="mt-2 w-full border-collapse font-mono text-sm">
+        <tbody>
+          <tr class="border-b border-rule"><th class="w-48 py-2 pr-4 text-left text-ink-muted">repo</th><td class="py-2 break-all">{b.source.repo}</td></tr>
+          <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">pinned ref</th><td class="py-2">{b.source.ref}</td></tr>
+          <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">recipe</th><td class="py-2">{b.source.recipe}</td></tr>
+          <tr class="border-b border-rule"><th class="py-2 pr-4 text-left text-ink-muted">image</th><td class="py-2 break-all">{b.imageRef}</td></tr>
+          <tr><th class="py-2 pr-4 text-left text-ink-muted">freshness</th><td class="py-2">{b.freshness} · {b.version}</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="resolve" class="mt-8">
+      <h3 class="font-mono text-sm uppercase text-ink-muted">Resolve target <span class="lowercase">(what a consumer reads at deploy)</span></h3>
+      <div class="mt-2 flex items-center gap-3">
+        <a href={`/catalog/${i.id}.json`} class="font-mono text-xs text-moss-deep underline">GET /catalog/{i.id}.json</a>
+        <CopyButton client:idle text={JSON.stringify(resolve, null, 2)} label="Copy resolve JSON" />
+      </div>
+      <pre class="mt-2 overflow-x-auto rounded bg-page p-3 font-mono text-xs"><code>{JSON.stringify(resolve, null, 2)}</code></pre>
+    </section>
+  </main>
+</BaseLayout>

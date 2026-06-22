@@ -1,0 +1,18 @@
+# Terrarium ownership = the path-scoped auto-merge backstop.
+#
+# A purely-additive PR under specimens/<new-id>/ may auto-merge on green Gate 0
+# checks (see .github/workflows/automerge.yml). EVERYTHING ELSE — the pipeline,
+# the reviewer registry, generated build records, the signed log — requires a
+# first-party (maintainer) review. Branch protection on `main` must require
+# CODEOWNERS review for these paths and the `converge` status check for all PRs.
+#
+# Replace @terrarium-registry/maintainers with the real org/team at repo creation.
+
+*                       @terrarium-registry/maintainers
+/.github/               @terrarium-registry/maintainers
+/cli/                   @terrarium-registry/maintainers
+/src/                   @terrarium-registry/maintainers
+/reviewers/             @terrarium-registry/maintainers
+/builds/                @terrarium-registry/maintainers
+/attestations/          @terrarium-registry/maintainers
+/log/                   @terrarium-registry/maintainers

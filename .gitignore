@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# Astro build output
+dist/
+out/
+.astro/
+
+# generated, deterministic build artifacts (regenerated from committed data)
+index/
+public/catalog.json
+public/catalog/
+public/reviewers.json
+public/measurements/
+public/integrations/
+public/badge/
+public/sitemap*.xml
+public/robots.txt
+
+# test artifacts
+coverage/
+playwright-report/
+test-results/
+
+# misc
+*.log
+.DS_Store
+.env
+.env.*

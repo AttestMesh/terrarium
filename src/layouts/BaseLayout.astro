@@ -1,0 +1,50 @@
+---
+import "../styles/globals.css";
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  jsonLd?: unknown[];
+}
+
+const { title, description, canonical, jsonLd = [] } = Astro.props;
+// Self-canonical absolute URL (the static model's SEO baseline).
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    {jsonLd.map((obj) => <script is:inline type="application/ld+json" set:html={JSON.stringify(obj)} />)}
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%233f6f52'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body class="min-h-screen bg-page text-ink-body antialiased">
+    <header class="border-b border-rule">
+      <div class="mx-auto flex max-w-5xl items-baseline justify-between px-6 py-4">
+        <a href="/" class="font-serif text-2xl text-moss-deep">Terrarium</a>
+        <span class="font-mono text-xs text-ink-muted">a field guide to confidential CVM integrations</span>
+      </div>
+    </header>
+    <slot />
+    <footer class="mt-16 border-t border-rule">
+      <div class="mx-auto max-w-5xl px-6 py-8 font-mono text-xs text-ink-muted">
+        Open registry · intake → certify → list. The measurement is the trust anchor; rebuild it yourself.
+      </div>
+    </footer>
+  </body>
+</html>

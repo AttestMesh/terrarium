@@ -1,0 +1,46 @@
+---
+import type { BoundarySpec } from "../../../cli/src/schema/specimen.ts";
+interface Props { boundary: BoundarySpec }
+const { boundary } = Astro.props;
+const { egress } = boundary;
+---
+
+<table class="w-full border-collapse font-mono text-sm">
+  <tbody>
+    <tr class="border-b border-rule">
+      <th class="w-48 py-2 pr-4 text-left align-top text-ink-muted">sealed volumes</th>
+      <td class="py-2">{boundary.sealedVolumes.length ? boundary.sealedVolumes.join(", ") : "—"}</td>
+    </tr>
+    <tr class="border-b border-rule">
+      <th class="py-2 pr-4 text-left align-top text-ink-muted">RA-TLS surfaces</th>
+      <td class="py-2">{boundary.raTlsSurfaces.length ? boundary.raTlsSurfaces.join(", ") : "—"}</td>
+    </tr>
+    <tr class="border-b border-rule">
+      <th class="py-2 pr-4 text-left align-top text-ink-muted">egress</th>
+      <td class="py-2">
+        <span class="text-moss-deep">{egress.policy}</span> · monitor {egress.monitor}
+        {egress.allowlist.length > 0 && (
+          <ul class="mt-1 list-disc pl-5">
+            {egress.allowlist.map((d) => (
+              <li>{d.host}{d.pin ? ` (pinned ${d.pin})` : " — UNPINNED"}</li>
+            ))}
+          </ul>
+        )}
+      </td>
+    </tr>
+    <tr class="border-b border-rule">
+      <th class="py-2 pr-4 text-left align-top text-ink-muted">secrets</th>
+      <td class="py-2">
+        {Object.entries(boundary.secrets).map(([k, v]) => <div>{k}: {v}</div>)}
+        {Object.keys(boundary.secrets).length === 0 && "—"}
+      </td>
+    </tr>
+    <tr>
+      <th class="py-2 pr-4 text-left align-top text-ink-muted">log redaction</th>
+      <td class="py-2">
+        {Object.entries(boundary.logRedaction).map(([k, v]) => <div>{k}: {v}</div>)}
+        {Object.keys(boundary.logRedaction).length === 0 && "—"}
+      </td>
+    </tr>
+  </tbody>
+</table>

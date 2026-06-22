@@ -1,0 +1,14 @@
+# identity + technical pointers (authored). The pipeline fills everything
+# claim-bearing — measurement, tier, markings, freshness — you never type those.
+id: postgres
+commonName: The Vault Keeper        # free brand name; NOT the SEO handle
+category: sealed-datastore          # a logical category (drives nav + predators)
+role: stateful-db
+upstream:
+  repo: github.com/terrarium-registry/postgres-cvm
+  ref: v16.3-cvm1                   # pinned tag
+build:
+  recipe: ./docker-compose.yml      # deterministic, digest-pinned
+ingress:
+  - { port: 5432, protocol: ra-tls }
+flavorHint: tdx.small

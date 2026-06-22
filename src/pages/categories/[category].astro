@@ -1,0 +1,37 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { byCategory, CATEGORY_LABEL } from "../../lib/catalog.ts";
+
+export function getStaticPaths() {
+  return [...byCategory().keys()].map((category) => ({ params: { category } }));
+}
+
+const { category } = Astro.params;
+const members = byCategory().get(category!) ?? [];
+const label = CATEGORY_LABEL[category!] ?? category!;
+const description = `Confidential ${label.toLowerCase()} on Intel TDX: reproducible, measured CVM integrations with certified confidential boundaries, listed in Terrarium.`;
+---
+
+<BaseLayout title={`Confidential ${label} on Intel TDX · Terrarium`} description={description}>
+  <main class="mx-auto max-w-5xl px-6 py-10">
+    <nav aria-label="Breadcrumb" class="font-mono text-xs text-ink-muted">
+      <a href="/" class="hover:text-moss-deep">Home</a> › <span>{label}</span>
+    </nav>
+    <h1 class="mt-2 font-serif text-3xl text-moss-deep">{label}</h1>
+    <p class="mt-2 max-w-2xl text-ink-muted">{description}</p>
+    <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+      {members.map((i) => (
+        <li class="rounded-lg border border-rule bg-card p-5">
+          <a href={`/specimens/${i.id}`} class="block">
+            <div class="flex items-baseline justify-between">
+              <span class="font-serif text-xl text-moss-deep">{i.commonName}</span>
+              <span class={`font-mono text-xs uppercase tier-${i.tier}`}>{i.tier}</span>
+            </div>
+            <div class="mt-1 font-mono text-sm">{i.id}</div>
+            <p class="mt-2 text-sm text-ink-muted">{i.fieldGuide.description}</p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </main>
+</BaseLayout>

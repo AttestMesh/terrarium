@@ -1,0 +1,45 @@
+{
+  "name": "terrarium",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Open-source registry of guarded, reproducible, confidential CVM integrations — intake → certify → list.",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "terrarium": "cli/src/index.ts"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "gen": "tsx cli/src/index.ts build-index && tsx cli/src/index.ts gen-api",
+    "build": "npm run gen && astro build",
+    "preview": "astro preview",
+    "terrarium": "tsx cli/src/index.ts",
+    "validate": "tsx cli/src/index.ts validate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "typecheck": "astro check && tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@astrojs/svelte": "^8.0.5",
+    "@noble/hashes": "^1.6.1",
+    "@tailwindcss/vite": "^4.2.4",
+    "astro": "^6.1.9",
+    "svelte": "^5.55.5",
+    "tailwindcss": "^4.2.4",
+    "yaml": "^2.9.0",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.7.0",
+    "happy-dom": "^20.0.10",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
