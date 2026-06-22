@@ -71,7 +71,17 @@ switch (cmd) {
     const base = arg === "--base" ? arg2 : arg;
     if (!base) throw new Error("usage: terrarium scope-check <baseSha>");
     const diff = execSync(`git diff --name-status ${base}...HEAD`, { encoding: "utf8" });
-    const r = checkScope(parseNameStatus(diff));
+    // specimen ids that already exist at the base — additions to these must not auto-merge
+    let existing: string[] = [];
+    try {
+      existing = execSync(`git ls-tree -d --name-only ${base} specimens/`, { encoding: "utf8" })
+        .split("\n")
+        .map((p) => p.trim().replace(/^specimens\//, ""))
+        .filter(Boolean);
+    } catch {
+      /* no specimens/ at base → no existing ids */
+    }
+    const r = checkScope(parseNameStatus(diff), existing);
     if (r.ok) console.log(`scope-check: ok — purely-additive new specimen "${r.id}"`);
     else {
       console.error(`scope-check: ${r.reason}`);

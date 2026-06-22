@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { deriveProofTier, deriveTier, attestationsForMeasurement } from "./facts.ts";
+import { deriveProofTier, deriveTier } from "./facts.ts";
 import type { BoundarySpec } from "../schema/specimen.ts";
-import type { Attestation } from "../schema/build.ts";
 
 const bnd = (policy: "deny-all" | "allowlist", sealed: boolean): BoundarySpec => ({
   sealedVolumes: sealed ? ["/data"] : [],
@@ -22,30 +21,13 @@ describe("tier ladder", () => {
     expect(deriveTier({ reproducible: true, lintsPass: true, hasUsageSignal: false, validAttestations: 0 })).toBe("raw"));
   it("beta when lints pass + a usage signal", () =>
     expect(deriveTier({ reproducible: true, lintsPass: true, hasUsageSignal: true, validAttestations: 0 })).toBe("beta"));
-  it("guarded when ≥1 valid attestation", () =>
+  it("guarded when reproducible + lints pass + ≥1 verified attestation", () =>
     expect(deriveTier({ reproducible: true, lintsPass: true, hasUsageSignal: true, validAttestations: 1 })).toBe("guarded"));
 });
 
-describe("guarded never carries across a rebuild — join by measurement, not by id", () => {
-  const OLD = "a".repeat(64);
-  const NEW = "b".repeat(64);
-  const att = (value: string): Attestation => ({
-    buildRef: "postgres@v16.3-cvm1",
-    measurement: { kind: "compose-hash", value },
-    reviewerId: "first-party",
-    scope: "boundary",
-    signature: "abcd",
-    issuedAt: "2026-06-22T00:00:00Z",
-    status: "valid",
-  });
-
-  it("an attestation over the OLD measurement does NOT apply to a NEW build", () => {
-    expect(attestationsForMeasurement([att(OLD)], { kind: "compose-hash", value: NEW })).toHaveLength(0);
-  });
-  it("applies only to the exact matching measurement", () => {
-    expect(attestationsForMeasurement([att(OLD)], { kind: "compose-hash", value: OLD })).toHaveLength(1);
-  });
-  it("a revoked attestation is ignored even on a match", () => {
-    expect(attestationsForMeasurement([{ ...att(OLD), status: "revoked" }], { kind: "compose-hash", value: OLD })).toHaveLength(0);
-  });
+describe("certification cannot bypass the base gates", () => {
+  it("a valid signature CANNOT make a NON-reproducible build guarded", () =>
+    expect(deriveTier({ reproducible: false, lintsPass: true, hasUsageSignal: false, validAttestations: 3 })).toBe("raw"));
+  it("a valid signature CANNOT make a LINT-FAILING build guarded", () =>
+    expect(deriveTier({ reproducible: true, lintsPass: false, hasUsageSignal: false, validAttestations: 3 })).toBe("raw"));
 });

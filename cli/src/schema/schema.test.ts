@@ -30,6 +30,19 @@ describe("authored schemas enforce authored-vs-derived structurally", () => {
   });
 });
 
+describe("recipe path must stay inside the specimen directory", () => {
+  const withRecipe = (recipe: string) => ({ ...validSpecimen, build: { recipe } });
+  it("accepts a relative path inside the dir", () => {
+    expect(specimenSchema.safeParse(withRecipe("./compose.yml")).success).toBe(true);
+  });
+  it("rejects a ../ escape", () => {
+    expect(specimenSchema.safeParse(withRecipe("../postgres/compose.yml")).success).toBe(false);
+  });
+  it("rejects an absolute path", () => {
+    expect(specimenSchema.safeParse(withRecipe("/etc/passwd")).success).toBe(false);
+  });
+});
+
 describe("boundary egress honesty is enforced at the schema level", () => {
   const base = { sealedVolumes: ["/data"], raTlsSurfaces: [5432] };
 

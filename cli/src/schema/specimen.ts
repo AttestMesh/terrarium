@@ -28,7 +28,12 @@ export const specimenSchema = z
       .strict(),
     build: z
       .object({
-        recipe: z.string().min(1), // path inside specimens/<id>/
+        recipe: z
+          .string()
+          .min(1)
+          .refine((p) => !p.startsWith("/") && !p.split(/[\\/]/).includes(".."), {
+            message: "recipe must be a relative path inside the specimen dir (no '..' or absolute path)",
+          }), // path inside specimens/<id>/
         claimedMeasurement: composeHashSchema.optional(), // CI derives the real one; must match
         attestation: z.url().optional(), // optional contributor-CI cross-rebuilder
       })

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { existsSync } from "node:fs";
-import { dir, writeJson, readJsonl, readReviewers, writeText } from "./io.ts";
+import { dir, writeJson, readJsonl, readReviewers, writeText, cleanGenerated } from "./io.ts";
 import { computeIntegrations } from "./build-index.ts";
 import { catalogResolveSchema, logEntrySchema, type Integration, type CatalogResolve, type LogEntry } from "./schema/catalog.ts";
 
@@ -67,6 +67,7 @@ function measurementRecords(): Map<string, unknown> {
 
 /** Emit the static read-API into ./public (served verbatim by Astro). */
 export function genApi(): Integration[] {
+  cleanGenerated(); // start from a clean set so a removed/renamed specimen leaves no stale files
   const integrations = computeIntegrations();
   const measurements = measurementRecords();
 

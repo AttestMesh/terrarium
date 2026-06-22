@@ -30,3 +30,23 @@ describe("converge — the measurement is adversarial, not oracular", () => {
     if (!r.ok) expect(r.reason).toBe("mismatch");
   });
 });
+
+describe("converge — quorum requires DISTINCT rebuilders", () => {
+  it("duplicate rebuilder ids do not satisfy quorum (3 reports, 1 rebuilder)", () => {
+    const r = converge([rep("x", A), rep("x", A), rep("x", A)], 2);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("insufficient");
+  });
+
+  it("the same rebuilder reporting two different measurements fails clearly", () => {
+    const r = converge([rep("x", A), rep("x", B), rep("y", A)], 2);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("inconsistent");
+  });
+
+  it("counts DISTINCT rebuilders, ignoring duplicates, when they agree", () => {
+    const r = converge([rep("x", A), rep("x", A), rep("y", A)], 2);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.rebuilders).toBe(2);
+  });
+});

@@ -4,6 +4,7 @@ import {
   listSpecimenIds,
   readBuilds,
   readAttestations,
+  readReviewers,
   writeJson,
   writeJsonl,
   readJsonl,
@@ -11,6 +12,7 @@ import {
   dir,
 } from "./io.ts";
 import { signHex, verifyHex, chainHash, publicKeyFromPrivate } from "./crypto.ts";
+import { attestationLogEvent } from "./trust.ts";
 import { logEntrySchema, type LogEntry } from "./schema/catalog.ts";
 import type { Build } from "./schema/build.ts";
 
@@ -43,18 +45,24 @@ function events(): LogCore[] {
       });
     }
   }
+  const reviewers = readReviewers();
   for (const a of readAttestations()) {
     const b = buildByMeasurement.get(a.measurement.value);
     if (!b) continue;
+    // A file is not history. Only an authentic signature by a registered reviewer
+    // creates an event: active+valid → "attested", authentic+revoked → "revoked";
+    // forged / unknown reviewer / suspended → null → no event.
+    const event = attestationLogEvent(a, reviewers);
+    if (!event) continue;
     cores.push({
-      event: a.status === "revoked" ? "revoked" : "attested",
+      event,
       measurement: a.measurement,
       integrationId: b.integrationId,
       source: { repo: b.source.repo, ref: b.source.ref, recipe: b.source.recipe, commit: b.sourceCommit },
       signers: [a.reviewerId],
       revocations: [],
       rebuilders: b.rebuilders,
-      timeline: [{ at: a.issuedAt, event: a.status === "revoked" ? "revoked" : "attested" }],
+      timeline: [{ at: a.issuedAt, event }],
     });
   }
 

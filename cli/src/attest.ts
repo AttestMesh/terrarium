@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { readBuilds, readReviewers, writeJson, dir } from "./io.ts";
+import { readLatestBuild, readReviewers, writeJson, dir } from "./io.ts";
 import { signHex } from "./crypto.ts";
 import { attestationSchema, type Attestation } from "./schema/build.ts";
 
@@ -20,8 +20,8 @@ export function attest(id: string, reviewerId: string, opts: AttestOptions = {})
   if (!reviewer) throw new Error(`unknown reviewer "${reviewerId}" — add reviewers/${reviewerId}.yaml`);
   if (reviewer.status !== "active") throw new Error(`reviewer "${reviewerId}" is ${reviewer.status}, not active`);
 
-  const builds = readBuilds(id);
-  const latest = builds.find((b) => b.isLatest) ?? builds[0];
+  // the same "current build" the catalog lists, so the signature targets the right one
+  const latest = readLatestBuild(id);
   if (!latest) throw new Error(`no build for "${id}" — run gate0 first`);
 
   const keyPath = opts.keyPath ?? process.env.TERRARIUM_REVIEWER_KEY ?? join(dir.secrets, `${reviewerId}.key`);

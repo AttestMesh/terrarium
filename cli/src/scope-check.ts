@@ -10,7 +10,12 @@ export interface Change {
 
 export type ScopeResult = { ok: true; id: string } | { ok: false; reason: string };
 
-export function checkScope(changes: Change[]): ScopeResult {
+/**
+ * @param existingIds specimen ids that already exist at the PR base. Auto-merge is
+ *   only for a brand-NEW specimen, so adding files under an already-existing one
+ *   (where a human already reviewed the boundary) must not auto-merge.
+ */
+export function checkScope(changes: Change[], existingIds: string[] = []): ScopeResult {
   if (changes.length === 0) return { ok: false, reason: "no changes" };
   const ids = new Set<string>();
   for (const c of changes) {
@@ -22,7 +27,11 @@ export function checkScope(changes: Change[]): ScopeResult {
     ids.add(m[1]);
   }
   if (ids.size !== 1) return { ok: false, reason: `touches ${ids.size} specimen dirs; exactly one new id required` };
-  return { ok: true, id: [...ids][0] };
+  const id = [...ids][0];
+  if (existingIds.includes(id)) {
+    return { ok: false, reason: `specimen "${id}" already exists — auto-merge is for purely-additive NEW specimens only` };
+  }
+  return { ok: true, id };
 }
 
 /** Parse `git diff --name-status <base>...HEAD` output into changes. */

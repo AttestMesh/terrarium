@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync, rmSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, resolve, relative, isAbsolute } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { specimenSchema, boundarySpecSchema, fieldGuideSchema, type Specimen, type BoundarySpec, type FieldGuide } from "./schema/specimen.ts";
 import { reviewerSchema, type Reviewer } from "./schema/reviewer.ts";
@@ -89,6 +89,12 @@ export function listSpecimenIds(): string[] {
     .sort();
 }
 
+/** A resolved recipe path must stay strictly inside the specimen directory (no `../`, no absolute escape). */
+export function recipeWithinSpecimen(base: string, recipePath: string): boolean {
+  const rel = relative(base, recipePath);
+  return rel !== "" && !rel.startsWith("..") && !isAbsolute(rel);
+}
+
 export function readSpecimen(id: string): SpecimenBundle {
   const base = join(dir.specimens, id);
   const specimen = specimenSchema.parse(parseYaml(readFileSync(join(base, "specimen.yaml"), "utf8")));
@@ -97,6 +103,10 @@ export function readSpecimen(id: string): SpecimenBundle {
   const fg = parseFrontMatter(readFileSync(join(base, "field-guide.md"), "utf8"));
   const fieldGuide = fieldGuideSchema.parse(fg.data);
   const recipePath = resolve(base, specimen.build.recipe);
+  // Defense-in-depth over the schema refine: never read a recipe outside the specimen dir.
+  if (!recipeWithinSpecimen(base, recipePath)) {
+    throw new Error(`recipe "${specimen.build.recipe}" escapes the specimen directory specimens/${id}/`);
+  }
   const recipeText = readFileSync(recipePath, "utf8");
   return { id, specimen, boundary, fieldGuide, recipeText, recipePath };
 }
@@ -113,6 +123,31 @@ export function readBuilds(id: string): Build[] {
   return readdirSync(base)
     .filter((f) => f.endsWith(".json") && f !== "latest.json")
     .map((f) => buildSchema.parse(readJson(join(base, f))));
+}
+
+/**
+ * The single source of truth for "which build is current" — so the catalog and a
+ * reviewer's signature target the SAME build regardless of filesystem read order.
+ * Prefers the committed builds/<id>/latest.json pointer (validated to name a real
+ * build), then the `isLatest` flag, then the newest by builtAt.
+ */
+/** Pure selection: prefer the pointer version, else the single isLatest flag, else newest by builtAt. */
+export function selectLatest(builds: Build[], pointerVersion?: string): Build | null {
+  if (builds.length === 0) return null;
+  if (pointerVersion !== undefined) {
+    const pointed = builds.find((b) => b.version === pointerVersion);
+    if (!pointed) throw new Error(`latest-build pointer names unknown version "${pointerVersion}"`);
+    return pointed;
+  }
+  const flagged = builds.filter((b) => b.isLatest);
+  if (flagged.length === 1) return flagged[0];
+  return [...builds].sort((a, b) => b.builtAt.localeCompare(a.builtAt))[0];
+}
+
+export function readLatestBuild(id: string): Build | null {
+  const pointerPath = join(dir.builds, id, "latest.json");
+  const pointerVersion = existsSync(pointerPath) ? (readJson(pointerPath) as { version?: string }).version : undefined;
+  return selectLatest(readBuilds(id), pointerVersion);
 }
 
 export function readReviewers(): Reviewer[] {
@@ -159,8 +194,22 @@ export function readWanted(): WantedRequest[] {
   return Array.isArray(raw) ? raw.map((w) => wantedRequestSchema.parse(w)) : [];
 }
 
+/** The generated static read-API outputs under public/ — regenerated every run, so a
+ *  stale per-id/per-hash file from a removed/renamed specimen never lingers. */
+export function generatedPublicOutputs(): string[] {
+  return [
+    join(dir.publicApi, "catalog"),
+    join(dir.publicApi, "catalog.json"),
+    join(dir.publicApi, "reviewers.json"),
+    join(dir.publicApi, "measurements"),
+    join(dir.publicApi, "integrations"),
+    join(dir.publicApi, "badge"),
+  ];
+}
+
+/** Remove the generated read-API outputs so generation starts from a clean set. */
 export function cleanGenerated(): void {
-  for (const p of [dir.index, join(dir.publicApi, "catalog"), join(dir.publicApi, "integrations")]) {
+  for (const p of generatedPublicOutputs()) {
     if (existsSync(p)) rmSync(p, { recursive: true, force: true });
   }
 }

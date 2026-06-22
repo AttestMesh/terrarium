@@ -1,6 +1,6 @@
 import type { Specimen, BoundarySpec, Category } from "../schema/specimen.ts";
 import type { Measurement } from "../schema/primitives.ts";
-import type { Attestation, Build, Tier, ProofTier } from "../schema/build.ts";
+import type { Build, Tier, ProofTier } from "../schema/build.ts";
 import type { Lore } from "../schema/catalog.ts";
 
 // Pure derivation: the verified record → the field-guide lore + the trust tier.
@@ -53,20 +53,19 @@ export function deriveProofTier(boundary: BoundarySpec): ProofTier {
   return "open";
 }
 
-/** Attestations valid for THIS measurement only — guarded never carries across a rebuild. */
-export function attestationsForMeasurement(all: Attestation[], measurement: Measurement): Attestation[] {
-  return all.filter((a) => a.status === "valid" && a.measurement.value === measurement.value);
-}
-
 export interface TierInputs {
   reproducible: boolean;
   lintsPass: boolean;
   hasUsageSignal: boolean;
+  /** count of VERIFIED active-reviewer valid attestations over the current measurement (see trust.ts) */
   validAttestations: number;
 }
 
+// Certification stacks on top of the base gates — it never bypasses them. A build
+// that does not reproduce, or fails the boundary/honesty/pinning lints, can NOT be
+// guarded no matter how many valid signatures it carries.
 export function deriveTier(i: TierInputs): Tier {
-  if (i.validAttestations >= 1) return "guarded";
+  if (i.reproducible && i.lintsPass && i.validAttestations >= 1) return "guarded";
   if (i.reproducible && i.lintsPass && i.hasUsageSignal) return "beta";
   return "raw"; // reproducible + manifest, self-attested
 }

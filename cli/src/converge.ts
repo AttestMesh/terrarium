@@ -12,15 +12,31 @@ export interface MeasurementReport {
 
 export type ConvergeResult =
   | { ok: true; measurement: Measurement; rebuilders: number }
-  | { ok: false; reason: "insufficient" | "divergent" | "mismatch"; detail: string };
+  | { ok: false; reason: "insufficient" | "divergent" | "mismatch" | "inconsistent"; detail: string };
 
 export function converge(
   reports: MeasurementReport[],
   minRebuilders: number,
   claimed?: string,
 ): ConvergeResult {
-  if (reports.length < minRebuilders) {
-    return { ok: false, reason: "insufficient", detail: `${reports.length} rebuilder(s) < required ${minRebuilders}` };
+  // Group by rebuilderId: quorum must come from DISTINCT rebuilders, not N reports
+  // from one (which proves nothing independent). A rebuilder that reports two
+  // different measurements contradicts itself and fails clearly.
+  const byRebuilder = new Map<string, Set<string>>();
+  for (const r of reports) {
+    const set = byRebuilder.get(r.rebuilderId) ?? new Set<string>();
+    set.add(r.measurement.value);
+    byRebuilder.set(r.rebuilderId, set);
+  }
+  for (const [id, vals] of byRebuilder) {
+    if (vals.size > 1) {
+      return { ok: false, reason: "inconsistent", detail: `rebuilder "${id}" reported ${vals.size} different measurements: ${[...vals].join(" vs ")}` };
+    }
+  }
+
+  const distinct = byRebuilder.size;
+  if (distinct < minRebuilders) {
+    return { ok: false, reason: "insufficient", detail: `${distinct} distinct rebuilder(s) < required ${minRebuilders}` };
   }
   const values = new Set(reports.map((r) => r.measurement.value));
   if (values.size !== 1) {
@@ -30,5 +46,5 @@ export function converge(
   if (claimed && claimed !== measurement.value) {
     return { ok: false, reason: "mismatch", detail: `claimed ${claimed} != computed ${measurement.value}` };
   }
-  return { ok: true, measurement, rebuilders: reports.length };
+  return { ok: true, measurement, rebuilders: distinct };
 }

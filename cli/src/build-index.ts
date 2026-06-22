@@ -1,10 +1,11 @@
 import { join } from "node:path";
-import { listSpecimenIds, readSpecimen, readBuilds, readAttestations, readReviewers, readAdvisories, readUpstreamState, writeJson, dir } from "./io.ts";
+import { listSpecimenIds, readSpecimen, readBuilds, readLatestBuild, readAttestations, readReviewers, readAdvisories, readUpstreamState, writeJson, dir } from "./io.ts";
 import { honestyLint } from "./lint/honesty.ts";
 import { boundaryLint, imagePinLint } from "./lint/boundary.ts";
 import { composeImages } from "./measurement.ts";
 import { deriveSeo } from "./derive/seo.ts";
-import { deriveLore, deriveProofTier, deriveTier, attestationsForMeasurement } from "./derive/facts.ts";
+import { deriveLore, deriveProofTier, deriveTier } from "./derive/facts.ts";
+import { verifiedAttestations } from "./trust.ts";
 import { deriveFreshness } from "./derive/freshness.ts";
 import { integrationSchema, type Integration, type Publisher } from "./schema/catalog.ts";
 import type { Specimen } from "./schema/specimen.ts";
@@ -19,21 +20,23 @@ function publisherFor(specimen: Specimen): Publisher {
 /** Read-only join: specimens × latest build × attestations(by measurement) → Integration[]. */
 export function computeIntegrations(): Integration[] {
   const allAttestations = readAttestations();
+  const reviewers = readReviewers();
   const advisories = readAdvisories();
   const upstream = readUpstreamState();
   const integrations: Integration[] = [];
 
   for (const id of listSpecimenIds()) {
     const { specimen, boundary, fieldGuide, recipeText } = readSpecimen(id);
-    const builds = readBuilds(id).sort((a, b) => b.builtAt.localeCompare(a.builtAt));
-    const latest = builds.find((b) => b.isLatest) ?? builds[0];
+    const builds = readBuilds(id);
+    const latest = readLatestBuild(id);
     if (!latest) continue; // not yet reproduced (Gate 0) → not listed at any tier
 
     const lintsPass =
       honestyLint(fieldGuide, boundary).length === 0 &&
       boundaryLint(specimen, boundary).length === 0 &&
       imagePinLint(composeImages(recipeText)).length === 0;
-    const atts = attestationsForMeasurement(allAttestations, latest.measurement);
+    // Only verified active-reviewer valid signatures over THIS measurement count.
+    const atts = verifiedAttestations(allAttestations, reviewers, latest.measurement);
     const tier = deriveTier({
       reproducible: latest.reproducible,
       lintsPass,
@@ -46,13 +49,18 @@ export function computeIntegrations(): Integration[] {
       latestRelease: upstream[id]?.latestRelease,
       advisories,
     });
-    const versions = builds.map((b) => ({
-      version: b.version,
-      measurement: b.measurement,
-      builtAt: b.builtAt,
-      freshness: b.isLatest ? freshness : ("behind" as const), // superseded builds are behind
-      isLatest: b.isLatest,
-    }));
+    const versions = [...builds]
+      .sort((a, b) => b.builtAt.localeCompare(a.builtAt))
+      .map((b) => {
+        const isLatest = b.version === latest.version; // tied to the selected current build
+        return {
+          version: b.version,
+          measurement: b.measurement,
+          builtAt: b.builtAt,
+          freshness: isLatest ? freshness : ("behind" as const), // superseded builds are behind
+          isLatest,
+        };
+      });
 
     integrations.push(
       integrationSchema.parse({
