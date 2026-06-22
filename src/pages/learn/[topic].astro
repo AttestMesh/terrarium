@@ -1,0 +1,35 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { EXPLAINERS, getExplainer } from "../../lib/explainers.ts";
+
+export function getStaticPaths() {
+  return EXPLAINERS.map((e) => ({ params: { topic: e.slug } }));
+}
+
+const { topic } = Astro.params;
+const e = getExplainer(topic!)!;
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: new URL("/", Astro.site).href },
+    { "@type": "ListItem", position: 2, name: "Learn", item: new URL("/learn", Astro.site).href },
+    { "@type": "ListItem", position: 3, name: e.keyword },
+  ],
+};
+---
+
+<BaseLayout title={`${e.title} · Terrarium`} description={e.description} jsonLd={[breadcrumb]}>
+  <main class="mx-auto max-w-3xl px-6 py-10">
+    <nav aria-label="Breadcrumb" class="font-mono text-xs text-ink-muted">
+      <a href="/" class="hover:text-moss-deep">Home</a> › <a href="/learn" class="hover:text-moss-deep">Learn</a> › <span>{e.keyword}</span>
+    </nav>
+    <h1 class="mt-2 font-serif text-3xl text-moss-deep">{e.title}</h1>
+    <article class="mt-5 space-y-4 text-ink-body">
+      {e.body.map((p) => <p>{p}</p>)}
+    </article>
+    <p class="mt-8 font-mono text-xs text-ink-muted">
+      ← <a href="/" class="text-moss-deep underline">Browse specimens</a> that put this into practice.
+    </p>
+  </main>
+</BaseLayout>

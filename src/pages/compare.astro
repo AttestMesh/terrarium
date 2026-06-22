@@ -1,0 +1,48 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { allIntegrations } from "../lib/catalog.ts";
+
+// Side-by-side on the structured fields — the differentiator a text-blob registry
+// can't offer. Compares all listed specimens; the data is per-item and unfakeable.
+const integrations = allIntegrations();
+const rows: { label: string; get: (i: (typeof integrations)[number]) => string }[] = [
+  { label: "tier", get: (i) => i.tier },
+  { label: "proof", get: (i) => i.proofTier },
+  { label: "freshness", get: (i) => i.freshness },
+  { label: "egress", get: (i) => i.latestBuild.boundarySpec.egress.policy },
+  { label: "sealed volumes", get: (i) => String(i.latestBuild.boundarySpec.sealedVolumes.length) },
+  { label: "RA-TLS surfaces", get: (i) => i.latestBuild.boundarySpec.raTlsSurfaces.join(", ") || "—" },
+  { label: "signers", get: (i) => (i.attestations.length ? i.attestations.map((a) => a.reviewerId).join(", ") : "—") },
+  { label: "measurement", get: (i) => i.latestBuild.measurement.value.slice(0, 12) + "…" },
+];
+---
+
+<BaseLayout
+  title="Compare confidential CVM integrations — boundary, tier, freshness · Terrarium"
+  description="Side-by-side comparison of confidential CVM integrations on their structured fields: boundary spec, proof tier, certification tier, freshness, and measurement."
+>
+  <main class="mx-auto max-w-5xl px-6 py-10">
+    <h1 class="font-serif text-3xl text-moss-deep">Compare specimens</h1>
+    <p class="mt-2 text-ink-muted">Structured fields only — the substance, not a marketing blurb.</p>
+    <div class="mt-6 overflow-x-auto">
+      <table class="w-full border-collapse font-mono text-sm">
+        <thead>
+          <tr class="border-b border-rule">
+            <th class="py-2 pr-4 text-left text-ink-muted">field</th>
+            {integrations.map((i) => (
+              <th class="py-2 pr-4 text-left"><a href={`/specimens/${i.id}`} class="text-moss-deep hover:underline">{i.id}</a></th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr class="border-b border-rule">
+              <th class="py-2 pr-4 text-left text-ink-muted">{r.label}</th>
+              {integrations.map((i) => <td class="py-2 pr-4">{r.get(i)}</td>)}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</BaseLayout>

@@ -1,11 +1,15 @@
 import type { APIRoute } from "astro";
 import { allIntegrations, byCategory } from "../lib/catalog.ts";
+import { EXPLAINERS } from "../lib/explainers.ts";
 
 // Item + hub pages only — never the client-side filter fragments (no crawlable
 // result URLs), so the catalog can't generate thin/zero-result indexable pages.
 export const GET: APIRoute = ({ site }) => {
   const paths = [
     "/",
+    "/compare",
+    "/learn",
+    ...EXPLAINERS.map((e) => `/learn/${e.slug}`),
     ...[...byCategory().keys()].map((c) => `/categories/${c}`),
     ...allIntegrations().map((i) => `/specimens/${i.id}`),
   ];

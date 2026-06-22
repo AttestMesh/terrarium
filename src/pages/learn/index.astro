@@ -1,0 +1,24 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { EXPLAINERS } from "../../lib/explainers.ts";
+---
+
+<BaseLayout
+  title="Learn: confidential computing, attestation & reproducible builds · Terrarium"
+  description="Plain explainers on the concepts behind confidential CVM integrations: remote attestation, reproducible builds, and Intel TDX."
+>
+  <main class="mx-auto max-w-3xl px-6 py-10">
+    <nav aria-label="Breadcrumb" class="font-mono text-xs text-ink-muted"><a href="/" class="hover:text-moss-deep">Home</a> › Learn</nav>
+    <h1 class="mt-2 font-serif text-3xl text-moss-deep">Learn</h1>
+    <ul class="mt-6 space-y-4">
+      {EXPLAINERS.map((e) => (
+        <li class="rounded-lg border border-rule bg-card p-5">
+          <a href={`/learn/${e.slug}`} class="block">
+            <span class="font-serif text-xl text-moss-deep">{e.title}</span>
+            <p class="mt-1 text-sm text-ink-muted">{e.description}</p>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </main>
+</BaseLayout>
