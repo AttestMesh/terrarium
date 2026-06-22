@@ -1,0 +1,36 @@
+# The Wanted queue — a WNPP-style demand ledger of integrations people want that
+# don't exist yet: request → intent → in-progress → listed. Demand is captured by
+# upvotes and by search-miss logging (a catalog search returning nothing becomes a
+# one-click "request this"). This is the best build-prioritisation signal; pair every
+# coverage gap with a demand number. Maintained via PRs / linked GitHub issues.
+- id: vllm
+  workload: vLLM (confidential inference)
+  category: confidential-compute
+  votes: 12
+  origin: request
+  state: intent
+- id: qdrant
+  workload: Qdrant (vector database)
+  category: sealed-datastore
+  votes: 7
+  origin: search-miss
+  state: requested
+- id: redis
+  workload: Redis
+  category: sealed-datastore
+  votes: 4
+  origin: request
+  state: in-progress
+- id: ens-gateway
+  workload: ENS / CCIP-Read gateway
+  category: controlled-egress-gateway
+  votes: 3
+  origin: search-miss
+  state: requested
+- id: postgres
+  workload: PostgreSQL
+  category: sealed-datastore
+  votes: 9
+  origin: request
+  state: listed
+  integrationId: postgres

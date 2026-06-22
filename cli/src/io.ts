@@ -4,6 +4,7 @@ import { parse as parseYaml } from "yaml";
 import { specimenSchema, boundarySpecSchema, fieldGuideSchema, type Specimen, type BoundarySpec, type FieldGuide } from "./schema/specimen.ts";
 import { reviewerSchema, type Reviewer } from "./schema/reviewer.ts";
 import { buildSchema, attestationSchema, advisorySchema, type Build, type Attestation, type Advisory } from "./schema/build.ts";
+import { wantedRequestSchema, type WantedRequest } from "./schema/observatory.ts";
 
 // The single I/O boundary. The repo root is the cwd (CLI is always run from there).
 export const ROOT = process.cwd();
@@ -15,6 +16,7 @@ export const dir = {
   log: join(ROOT, "log"),
   secrets: join(ROOT, ".secrets"),
   data: join(ROOT, "data"),
+  snapshots: join(ROOT, "snapshots"),
   index: join(ROOT, "index"),
   publicApi: join(ROOT, "public"),
 };
@@ -147,6 +149,14 @@ export function readUpstreamState(): Record<string, UpstreamEntry> {
   const path = join(dir.data, "upstream.json");
   if (!existsSync(path)) return {};
   return readJson(path) as Record<string, UpstreamEntry>;
+}
+
+/** wanted.yaml — the WNPP-style demand ledger (request → intent → in-progress → listed). */
+export function readWanted(): WantedRequest[] {
+  const path = join(ROOT, "wanted.yaml");
+  if (!existsSync(path)) return [];
+  const raw = parseYaml(readFileSync(path, "utf8"));
+  return Array.isArray(raw) ? raw.map((w) => wantedRequestSchema.parse(w)) : [];
 }
 
 export function cleanGenerated(): void {

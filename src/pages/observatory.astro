@@ -1,0 +1,54 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { latestSnapshot } from "../../cli/src/snapshot.ts";
+import { allIntegrations, CATEGORY_LABEL } from "../lib/catalog.ts";
+
+// A reporting view over the catalog snapshots — not a separate pipeline. Anti-vanity:
+// lead with the un-fakeable, cryptographically-attested metric; label everything
+// attested-vs-self-reported; track churn, not just successes.
+const snap = latestSnapshot();
+const integrations = allIntegrations();
+const guarded = integrations.filter((i) => i.tier === "guarded").length;
+const signatures = integrations.reduce((n, i) => n + i.attestations.length, 0);
+const pctFresh = snap && snap.counts.total ? Math.round((100 * snap.counts.fresh) / snap.counts.total) : 0;
+---
+
+<BaseLayout
+  title="State of Confidential Computing — the Terrarium observatory"
+  description="A time-series over the Terrarium catalog: guarded (attested) integrations, tier mix, % fresh, and churn. Lead metrics are cryptographically attested, not self-reported."
+>
+  <main class="mx-auto max-w-3xl px-6 py-10">
+    <nav aria-label="Breadcrumb" class="font-mono text-xs text-ink-muted"><a href="/" class="hover:text-moss-deep">Home</a> › Observatory</nav>
+    <h1 class="mt-2 font-serif text-3xl text-moss-deep">Observatory</h1>
+    <p class="mt-2 max-w-2xl text-ink-muted">The numbers a registry can only show if it keeps snapshots — most overwrite and can't.</p>
+
+    {snap ? (
+      <div class="mt-6 space-y-4">
+        <div class="rounded-lg border border-moss bg-card p-5">
+          <div class="font-mono text-xs uppercase text-ink-muted">headline — cryptographically attested, not self-reported</div>
+          <div class="mt-1 font-serif text-3xl text-moss-deep">{guarded} guarded</div>
+          <div class="font-mono text-xs text-ink-muted">{signatures} reviewer signature{signatures === 1 ? "" : "s"} over current measurements · of {snap.counts.total} listed</div>
+        </div>
+
+        <dl class="grid gap-4 sm:grid-cols-2 font-mono text-sm">
+          <div class="rounded-lg border border-rule bg-card p-4"><dt class="text-ink-muted">% fresh</dt><dd class="text-xl">{pctFresh}%</dd></div>
+          <div class="rounded-lg border border-rule bg-card p-4">
+            <dt class="text-ink-muted">tier mix</dt>
+            <dd>{Object.entries(snap.counts.byTier).map(([t, n]) => <span class={`mr-3 tier-${t}`}>{t}: {n}</span>)}</dd>
+          </div>
+          <div class="rounded-lg border border-rule bg-card p-4">
+            <dt class="text-ink-muted">by category</dt>
+            <dd>{Object.entries(snap.counts.byCategory).map(([c, n]) => <div>{CATEGORY_LABEL[c] ?? c}: {n}</div>)}</dd>
+          </div>
+          <div class="rounded-lg border border-rule bg-card p-4">
+            <dt class="text-ink-muted">since last snapshot</dt>
+            <dd>+{snap.additions.length} new · {snap.promotions.length} promoted · {snap.churned.length} churned</dd>
+          </div>
+        </dl>
+        <p class="font-mono text-xs text-ink-muted">snapshot taken {snap.takenAt}. Methodology: counts are over reproducible, listed specimens; “guarded” requires a valid signature on the current measurement.</p>
+      </div>
+    ) : (
+      <p class="mt-6 text-ink-muted">No snapshot yet — run <code class="font-mono">terrarium snapshot</code>.</p>
+    )}
+  </main>
+</BaseLayout>

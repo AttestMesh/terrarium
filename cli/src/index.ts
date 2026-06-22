@@ -11,8 +11,9 @@ import { checkScope, parseNameStatus } from "./scope-check.ts";
 import { watch } from "./watch.ts";
 import { attest } from "./attest.ts";
 import { genLog, verifyLog } from "./gen-log.ts";
-import { buildIndex } from "./build-index.ts";
+import { buildIndex, computeIntegrations } from "./build-index.ts";
 import { genApi } from "./gen-api.ts";
+import { takeSnapshot } from "./snapshot.ts";
 import { generateKeypair, publicKeyFromPrivate } from "./crypto.ts";
 
 /** Gate 1 — schema (via readSpecimen) + honesty + boundary lints. Exit 1 on any finding. */
@@ -112,9 +113,17 @@ switch (cmd) {
     console.log(`gen-api: ${n} integration(s) → public/ read-API`);
     break;
   }
+  case "snapshot": {
+    const takenAt = arg ?? new Date().toISOString();
+    const s = takeSnapshot(computeIntegrations(), takenAt);
+    console.log(
+      `snapshot ${s.takenAt.slice(0, 10)}: ${s.counts.total} listed (+${s.additions.length} new, ${s.promotions.length} promoted, ${s.churned.length} churned) → snapshots/`,
+    );
+    break;
+  }
   default:
     console.error(
-      "usage: terrarium <validate|gate0|measure|scope-check|keygen|attest|gen-log|verify-log|watch|build-index|gen-api> [args]",
+      "usage: terrarium <validate|gate0|measure|scope-check|keygen|attest|gen-log|verify-log|watch|build-index|gen-api|snapshot> [args]",
     );
     process.exit(2);
 }

@@ -8,6 +8,8 @@ export const GET: APIRoute = ({ site }) => {
   const paths = [
     "/",
     "/compare",
+    "/wanted",
+    "/observatory",
     "/learn",
     ...EXPLAINERS.map((e) => `/learn/${e.slug}`),
     ...[...byCategory().keys()].map((c) => `/categories/${c}`),

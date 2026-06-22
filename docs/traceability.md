@@ -24,4 +24,9 @@ Maps the spec (`studio/docs/specs/cvm-integrations-marketplace.md`) to code. ✅
 | ✅ Gate 0 zero-trust isolation (CI) | `.github/workflows/pr-gates.yml` (pull_request, no secrets, ≥2-rebuilder matrix → converge), `scope-check`, `CODEOWNERS`, `docs/ci-and-branch-protection.md` | `scope-check.test.ts` |
 | ✅ Upstream watcher / freshness / version history | `cli/src/watch.ts`, `cli/src/derive/freshness.ts`, Integration `versions[]`, `/integrations/:id/freshness` | `freshness.test.ts` |
 | ✅ Trust-policy *schema* published (eval is consumer-side) | `trustPolicySchema` | — |
-| ⏳ Federated reviewers, bonding, leak/audit bounty, on-chain registry, observatory report | — | — (deferred, gated on third-party demand) |
+| ✅ Comparison view + topical-authority hubs (SEO) | `compare.astro`, `learn/[topic].astro`, `lib/explainers.ts` | built |
+| ✅ Client-side filtering (URL-fragment only, no crawlable result URLs) | `CatalogFilter.svelte` over server-rendered cards | built |
+| ✅ Wanted queue (demand ledger + search-miss capture) | `wanted.yaml`, `wantedRequestSchema`, `wanted.astro` | schema-validated |
+| ✅ Catalog snapshots (observatory time-series, day-one) | `cli/src/snapshot.ts`, `snapshots/*.json`, `observatory.astro` | `snapshot.test.ts` |
+| ✅ Embeddable badge | `gen-api.ts` → `/badge/:id.svg` | `built-html` |
+| ⏳ Federated reviewers, bonding, leak/audit bounty, on-chain registry, observatory *report* layer | — | — (deferred, gated on third-party demand) |
