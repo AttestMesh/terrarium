@@ -1,10 +1,15 @@
 #!/usr/bin/env -S npx tsx
-import { readSpecimen, listSpecimenIds } from "./io.ts";
+import { writeFileSync, mkdirSync, chmodSync } from "node:fs";
+import { join } from "node:path";
+import { readSpecimen, listSpecimenIds, dir } from "./io.ts";
 import { honestyLint } from "./lint/honesty.ts";
 import { boundaryLint } from "./lint/boundary.ts";
 import { gate0 } from "./gate0.ts";
+import { attest } from "./attest.ts";
+import { genLog, verifyLog } from "./gen-log.ts";
 import { buildIndex } from "./build-index.ts";
 import { genApi } from "./gen-api.ts";
+import { generateKeypair, publicKeyFromPrivate } from "./crypto.ts";
 
 /** Gate 1 — schema (via readSpecimen) + honesty + boundary lints. Exit 1 on any finding. */
 function validate(target?: string): void {
@@ -23,7 +28,19 @@ function validate(target?: string): void {
   if (findings > 0) process.exit(1);
 }
 
-const [cmd, arg] = process.argv.slice(2);
+/** Generate an ed25519 keypair; private key → .secrets/<name>.key (gitignored), public key printed. */
+function keygen(name: string): void {
+  const { publicKey, privateKeyPem } = generateKeypair();
+  mkdirSync(dir.secrets, { recursive: true });
+  const keyPath = join(dir.secrets, `${name}.key`);
+  writeFileSync(keyPath, privateKeyPem, "utf8");
+  chmodSync(keyPath, 0o600);
+  console.log(`keygen ${name}: private key → ${keyPath} (gitignored)`);
+  console.log(`  signingKey: ${publicKey}`);
+  console.log(`  (verify: ${publicKey === publicKeyFromPrivate(privateKeyPem) ? "ok" : "MISMATCH"})`);
+}
+
+const [cmd, arg, arg2] = process.argv.slice(2);
 switch (cmd) {
   case "validate":
     validate(arg);
@@ -32,6 +49,27 @@ switch (cmd) {
     if (!arg) throw new Error("usage: terrarium gate0 <id>");
     const b = gate0(arg);
     console.log(`gate0 ${arg}: ${b.measurement.value} (${b.rebuilders} rebuilders) → builds/${arg}/${b.version}.json`);
+    break;
+  }
+  case "keygen":
+    if (!arg) throw new Error("usage: terrarium keygen <name>");
+    keygen(arg);
+    break;
+  case "attest": {
+    if (!arg || !arg2) throw new Error("usage: terrarium attest <id> <reviewerId>");
+    const a = attest(arg, arg2);
+    console.log(`attest ${arg} by ${arg2}: signed ${a.measurement.value} → attestations/`);
+    break;
+  }
+  case "gen-log": {
+    const entries = genLog();
+    console.log(`gen-log: ${entries.length} signed entr${entries.length === 1 ? "y" : "ies"} → log/measurements.jsonl`);
+    break;
+  }
+  case "verify-log": {
+    const r = verifyLog();
+    console.log(`verify-log: ${r.ok ? `ok (${r.checked} entries)` : `FAILED — ${r.reason}`}`);
+    if (!r.ok) process.exit(1);
     break;
   }
   case "build-index": {
@@ -45,6 +83,6 @@ switch (cmd) {
     break;
   }
   default:
-    console.error("usage: terrarium <validate|gate0|build-index|gen-api> [id]");
+    console.error("usage: terrarium <validate|gate0|keygen|attest|gen-log|verify-log|build-index|gen-api> [args]");
     process.exit(2);
 }

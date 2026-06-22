@@ -6,6 +6,10 @@ dist/
 out/
 .astro/
 
+# reviewer / registry private signing keys — NEVER committed
+.secrets/
+*.key
+
 # generated, deterministic build artifacts (regenerated from committed data)
 index/
 public/catalog.json

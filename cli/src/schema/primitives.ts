@@ -21,10 +21,10 @@ export const measurementSchema = z
   .strict();
 export type Measurement = z.infer<typeof measurementSchema>;
 
-/** A reviewer's ed25519 public key, `ed25519:<base64>`. */
+/** A reviewer's ed25519 public key, `ed25519:<base64url>` (the JWK `x`, no padding). */
 export const ed25519PubKeySchema = z
   .string()
-  .regex(/^ed25519:[A-Za-z0-9+/=]+$/, "ed25519:<base64> public key");
+  .regex(/^ed25519:[A-Za-z0-9_-]+$/, "ed25519:<base64url> public key");
 
 /** A detached signature over a measurement, lowercase hex. */
 export const signatureSchema = z.string().regex(/^[a-f0-9]+$/, "lowercase hex signature");

@@ -39,6 +39,11 @@ describe.skipIf(!hasBuild)("built specimen page SEO contract (dist/)", () => {
     expect(stripped).toContain("adc1ac8e23769d8f53e1cc44c890932ce32f1579371efedc65e3047d4833ed18");
     expect(stripped).toContain("deny-all");
   });
+
+  it("shows the guarded tier and names the signer", () => {
+    expect(html).toContain("guarded");
+    expect(html).toContain("flashbots");
+  });
 });
 
 describe.skipIf(!existsSync(join(dist, "catalog", "postgres.json")))("served read-API (dist/)", () => {

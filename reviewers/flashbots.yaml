@@ -1,0 +1,9 @@
+# A registered reviewer = a public signing key. Authorization is cryptographic
+# ("is this a registered key?"), not session-based. v1 has one first-party signer.
+# The matching private key lives only in a CI secret / .secrets/flashbots.key.
+id: flashbots
+name: Flashbots
+kind: first-party
+signingKey: ed25519:YdGUoNMy_xfp2ahr814MQdnPQBGbiZechHrPQEjdG4M
+accreditedAt: 2026-06-22T00:00:00Z
+status: active

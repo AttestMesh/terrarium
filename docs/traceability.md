@@ -17,8 +17,9 @@ Maps the spec (`studio/docs/specs/cvm-integrations-marketplace.md`) to code. ✅
 | ✅ Discoverable item pages (SEO) | `src/pages/specimens/[id].astro`, `BaseLayout.astro`, `sitemap.xml.ts`, `robots.txt.ts` | `e2e/specimen.spec.ts`, `built-html.test.ts` |
 | ✅ Specimen entry schema (two registers) | `specimens/[id].astro` (field-guide ↔ inspector) | `e2e/specimen.spec.ts` |
 | ✅ Logical categories as navigation | `categorySchema`, `categories/[category].astro` | — |
-| 🟡 Signed measurement log (append-only) | schema `logEntrySchema`; git substrate | — (signing in M2) |
-| 🟡 First-party certification + signing → `guarded` | `reviewerSchema`, `attestationSchema`, tier join | — (ed25519 signing in M2) |
+| ✅ Signed measurement log (append-only, hash-chained) | `cli/src/gen-log.ts` (materialised from git substrate), `/measurements/:hash` | `crypto.test.ts`; integration-verified tamper detection |
+| ✅ First-party certification + signing → `guarded` | `cli/src/{crypto,attest}.ts`, `reviewers/flashbots.yaml`, tier join by measurement | `crypto.test.ts`, `facts.test.ts`, `built-html.test.ts` (guarded + signer) |
+| ✅ Embeddable trust badge | `gen-api.ts` → `/badge/:id.svg` | `built-html` (served) |
 | 🟡 Deprecation / measurement-invalid path | freshness `cve` → static banner | `built-html` (banner) |
 | 🟡 Gate 0 zero-trust isolation (CI) | designed (split-execution, hermetic, path-scoped auto-merge); `CODEOWNERS` | — (workflows in M2) |
 | 🟡 Upstream watcher / freshness | `freshnessSchema`, `/integrations/:id/freshness` | — (watcher bot in M2) |

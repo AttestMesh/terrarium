@@ -12,6 +12,8 @@ export const dir = {
   reviewers: join(ROOT, "reviewers"),
   builds: join(ROOT, "builds"),
   attestations: join(ROOT, "attestations"),
+  log: join(ROOT, "log"),
+  secrets: join(ROOT, ".secrets"),
   index: join(ROOT, "index"),
   publicApi: join(ROOT, "public"),
 };
@@ -36,6 +38,25 @@ export function writeJson(path: string, value: unknown): void {
 }
 export function readJson(path: string): unknown {
   return JSON.parse(readFileSync(path, "utf8"));
+}
+
+export function writeText(path: string, body: string): void {
+  mkdirSync(resolve(path, ".."), { recursive: true });
+  writeFileSync(path, body, "utf8");
+}
+
+/** Append-only-friendly JSON Lines: one canonical (key-sorted) object per line. */
+export function writeJsonl(path: string, items: unknown[]): void {
+  mkdirSync(resolve(path, ".."), { recursive: true });
+  const body = items.map((it) => JSON.stringify(sortValue(it))).join("\n") + "\n";
+  writeFileSync(path, body, "utf8");
+}
+export function readJsonl(path: string): unknown[] {
+  if (!existsSync(path)) return [];
+  return readFileSync(path, "utf8")
+    .split("\n")
+    .filter((l) => l.trim().length > 0)
+    .map((l) => JSON.parse(l));
 }
 
 /** Parse `---`-fenced YAML front-matter from a markdown file; returns its data + body. */
