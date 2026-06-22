@@ -1,7 +1,8 @@
 import { join } from "node:path";
 import { listSpecimenIds, readSpecimen, readBuilds, readAttestations, readReviewers, readAdvisories, readUpstreamState, writeJson, dir } from "./io.ts";
 import { honestyLint } from "./lint/honesty.ts";
-import { boundaryLint } from "./lint/boundary.ts";
+import { boundaryLint, imagePinLint } from "./lint/boundary.ts";
+import { composeImages } from "./measurement.ts";
 import { deriveSeo } from "./derive/seo.ts";
 import { deriveLore, deriveProofTier, deriveTier, attestationsForMeasurement } from "./derive/facts.ts";
 import { deriveFreshness } from "./derive/freshness.ts";
@@ -23,13 +24,15 @@ export function computeIntegrations(): Integration[] {
   const integrations: Integration[] = [];
 
   for (const id of listSpecimenIds()) {
-    const { specimen, boundary, fieldGuide } = readSpecimen(id);
+    const { specimen, boundary, fieldGuide, recipeText } = readSpecimen(id);
     const builds = readBuilds(id).sort((a, b) => b.builtAt.localeCompare(a.builtAt));
     const latest = builds.find((b) => b.isLatest) ?? builds[0];
     if (!latest) continue; // not yet reproduced (Gate 0) → not listed at any tier
 
     const lintsPass =
-      honestyLint(fieldGuide, boundary).length === 0 && boundaryLint(specimen, boundary).length === 0;
+      honestyLint(fieldGuide, boundary).length === 0 &&
+      boundaryLint(specimen, boundary).length === 0 &&
+      imagePinLint(composeImages(recipeText)).length === 0;
     const atts = attestationsForMeasurement(allAttestations, latest.measurement);
     const tier = deriveTier({
       reproducible: latest.reproducible,

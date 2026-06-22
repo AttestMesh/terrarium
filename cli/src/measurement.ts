@@ -23,6 +23,14 @@ export function measure(id: string, recipeText: string): Measurement {
 // Infra sidecars that share a compose but aren't the workload itself.
 const INFRA_SERVICE = /fabric|sidecar|proxy|monitor|gateway|dns|wireguard|warden|envoy/i;
 
+/** Every service image referenced by the recipe. */
+export function composeImages(recipeText: string): string[] {
+  const compose = parseYaml(recipeText) as { services?: Record<string, { image?: string }> };
+  return Object.values(compose.services ?? {})
+    .map((s) => s?.image)
+    .filter((i): i is string => Boolean(i));
+}
+
 /** The workload image a consumer resolves — the first non-infra service's image. */
 export function primaryImageRef(recipeText: string): string {
   const compose = parseYaml(recipeText) as { services?: Record<string, { image?: string }> };

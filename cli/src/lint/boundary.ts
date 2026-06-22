@@ -1,5 +1,22 @@
 import type { Specimen, BoundarySpec, Category } from "../schema/specimen.ts";
+import { isDigestPinned } from "../schema/primitives.ts";
 import type { LintFinding } from "./honesty.ts";
+
+/**
+ * Every recipe image must be pinned to an immutable digest. A tag (`name:v1`) does
+ * not pin the bytes — the image behind it can change — so the measurement over a
+ * tag-based compose is not anchored to specific image content. Flagged, not fatal:
+ * a real registry has both, but unpinned images can't reach `guarded`.
+ */
+export function imagePinLint(images: string[]): LintFinding[] {
+  return images
+    .filter((img) => !isDigestPinned(img))
+    .map((img) => ({
+      rule: "image-digest-pinned",
+      field: "build.recipe",
+      message: `image "${img}" is tag-pinned, not digest-pinned — a tag doesn't pin the bytes`,
+    }));
+}
 
 // Gate-1 structural boundary lints — automated leak-surface checks. Self-improving:
 // each new class of leak a reviewer finds is added here, shrinking Gate-2 human review.

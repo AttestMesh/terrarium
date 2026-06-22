@@ -4,9 +4,9 @@ import { execSync } from "node:child_process";
 import { join } from "node:path";
 import { readSpecimen, listSpecimenIds, dir } from "./io.ts";
 import { honestyLint } from "./lint/honesty.ts";
-import { boundaryLint } from "./lint/boundary.ts";
+import { boundaryLint, imagePinLint } from "./lint/boundary.ts";
 import { gate0 } from "./gate0.ts";
-import { measure } from "./measurement.ts";
+import { measure, composeImages } from "./measurement.ts";
 import { checkScope, parseNameStatus } from "./scope-check.ts";
 import { watch } from "./watch.ts";
 import { attest } from "./attest.ts";
@@ -21,8 +21,12 @@ function validate(target?: string): void {
   const ids = target ? [target.replace(/^specimens\//, "").replace(/\/$/, "")] : listSpecimenIds();
   let findings = 0;
   for (const id of ids) {
-    const { specimen, boundary, fieldGuide } = readSpecimen(id);
-    const f = [...honestyLint(fieldGuide, boundary), ...boundaryLint(specimen, boundary)];
+    const { specimen, boundary, fieldGuide, recipeText } = readSpecimen(id);
+    const f = [
+      ...honestyLint(fieldGuide, boundary),
+      ...boundaryLint(specimen, boundary),
+      ...imagePinLint(composeImages(recipeText)),
+    ];
     if (f.length === 0) {
       console.log(`✓ ${id}: schema + lints pass`);
     } else {

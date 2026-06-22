@@ -57,7 +57,7 @@ export const buildSchema = z
     sourceCommit: z.string().min(1),
     upstreamRef: githubRefSchema,
     measurement: measurementSchema,
-    imageRef: imageRefSchema, // resolved OCI digest ref — part of the consumer contract
+    imageRef: imageRefSchema, // OCI image ref (digest-pinned preferred; a tag is accepted but flagged by Gate 1)
     source: z
       .object({ repo: z.string(), ref: githubRefSchema, recipe: z.string() })
       .strict(), // repo + pinned ref + recipe path — "rebuild it yourself"
