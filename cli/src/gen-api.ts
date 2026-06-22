@@ -18,7 +18,7 @@ function resolveOf(i: Integration): CatalogResolve {
   });
 }
 
-const TIER_COLOR: Record<string, string> = { guarded: "#2c4f3a", beta: "#b4791f", raw: "#6b6760" };
+const TIER_COLOR: Record<string, string> = { guarded: "#41e6f2", beta: "#f5b14c", raw: "#355b62" };
 
 /** A shields.io-shaped embeddable badge — asserts only what the record verifies. */
 function badgeSvg(label: string, value: string, color: string): string {

@@ -33,21 +33,21 @@ const nav = [
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
-    <meta name="theme-color" content="#0b0d0f" />
+    <meta name="theme-color" content="#04070b" />
     {jsonLd.map((obj) => <script is:inline type="application/ld+json" set:html={JSON.stringify(obj)} />)}
     <link
       rel="icon"
       type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%2334d399'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='3' y='3' width='10' height='10' fill='none' stroke='%2341e6f2' transform='rotate(45 8 8)'/%3E%3C/svg%3E"
     />
   </head>
   <body class="min-h-screen bg-page text-ink-body antialiased">
     <header class="sticky top-0 z-10 border-b border-rule bg-page/85 backdrop-blur">
       <div class="mx-auto flex max-w-5xl items-center justify-between gap-6 px-6 py-3">
-        <a href={url("/")} class="flex items-baseline gap-2">
-          <span class="inline-block h-2 w-2 rounded-sm bg-moss" style="box-shadow:0 0 8px var(--color-moss)"></span>
-          <span class="font-serif text-xl text-ink">Terrarium</span>
-          <span class="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-ink-dim sm:inline">field guide</span>
+        <a href={url("/")} class="flex items-center gap-2">
+          <span class="inline-block h-2.5 w-2.5 border border-moss" style="transform:rotate(45deg); box-shadow:0 0 8px var(--color-moss)"></span>
+          <span class="text-lg font-semibold tracking-[0.12em] text-ink">TERRARIUM</span>
+          <span class="hidden font-mono text-[10px] uppercase tracking-[0.18em] text-ink-dim sm:inline">· registry</span>
         </a>
         <nav class="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] uppercase tracking-[0.1em]">
           {nav.map(([href, label]) => (
