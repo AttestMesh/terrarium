@@ -49,4 +49,4 @@ npm run typecheck                      # astro check + tsc --noEmit
 
 ## Status
 
-v1 walking skeleton: Postgres specimen flows end-to-end (Gate 0 → index → SEO page → resolve contract). Deferred to later phases: federated reviewers, bonding/slashing, leak/audit bounty, on-chain registry, the observatory report. See `docs/traceability.md`.
+v1 complete (M0–M2): permissionless reproducibility-gated listing, first-party certification → `guarded` (ed25519 + signed hash-chained log), zero-trust CI gates, freshness/upstream watcher + version history, the SEO surface (filter/compare/learn hubs), the Wanted demand ledger, and catalog snapshots (the observatory). Postgres / "The Vault Keeper" is listed `guarded`, end-to-end. Deferred to later phases (gated on third-party demand): federated reviewers, bonding/slashing, leak/audit bounty, on-chain registry, the observatory *report* layer. See `docs/traceability.md` + `docs/ci-and-branch-protection.md`.
