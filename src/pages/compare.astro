@@ -2,8 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { allIntegrations } from "../lib/catalog.ts";
 
-// Side-by-side on the structured fields — the differentiator a text-blob registry
-// can't offer. Compares all listed specimens; the data is per-item and unfakeable.
+// Compares all listed specimens side by side on their structured fields.
 const integrations = allIntegrations();
 const rows: { label: string; get: (i: (typeof integrations)[number]) => string }[] = [
   { label: "tier", get: (i) => i.tier },
@@ -24,7 +23,7 @@ const rows: { label: string; get: (i: (typeof integrations)[number]) => string }
   <main class="mx-auto max-w-5xl px-6 py-10">
     <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-moss">comparison</p>
     <h1 class="mt-2 font-serif text-4xl text-ink">Compare specimens</h1>
-    <p class="mt-2 text-ink-body">Structured fields only — the substance, not a marketing blurb.</p>
+    <p class="mt-2 text-ink-body">Boundary, proof, certification tier, freshness, and measurement, side by side.</p>
     <div class="tk-card mt-6 overflow-x-auto p-4">
       <table class="w-full border-collapse font-mono text-sm">
         <thead>

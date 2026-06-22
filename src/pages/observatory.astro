@@ -3,9 +3,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { latestSnapshot } from "../../cli/src/snapshot.ts";
 import { allIntegrations, CATEGORY_LABEL } from "../lib/catalog.ts";
 
-// A reporting view over the catalog snapshots — not a separate pipeline. Anti-vanity:
-// lead with the un-fakeable, cryptographically-attested metric; label everything
-// attested-vs-self-reported; track churn, not just successes.
+// A reporting view over the catalog snapshots. Leads with the attested metric,
+// labels attested vs self-reported, and tracks churn alongside growth.
 const snap = latestSnapshot();
 const integrations = allIntegrations();
 const guarded = integrations.filter((i) => i.tier === "guarded").length;
@@ -15,18 +14,18 @@ const pctFresh = snap && snap.counts.total ? Math.round((100 * snap.counts.fresh
 
 <BaseLayout
   title="State of Confidential Computing — the Terrarium observatory"
-  description="A time-series over the Terrarium catalog: guarded (attested) integrations, tier mix, % fresh, and churn. Lead metrics are cryptographically attested, not self-reported."
+  description="A time-series over the Terrarium catalog: guarded (attested) integrations, tier mix, % fresh, and churn. Lead metrics come from cryptographic attestations."
 >
   <main class="mx-auto max-w-3xl px-6 py-10">
     <nav aria-label="Breadcrumb" class="font-mono text-[11px] text-ink-dim"><a href="/" class="hover:text-moss">Home</a> › Observatory</nav>
     <p class="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-moss">state of confidential computing</p>
     <h1 class="mt-2 font-serif text-4xl text-ink">Observatory</h1>
-    <p class="mt-2 max-w-2xl text-ink-body">The numbers a registry can only show if it keeps snapshots — most overwrite and can't.</p>
+    <p class="mt-2 max-w-2xl text-ink-body">How coverage, certification, and freshness change between snapshots.</p>
 
     {snap ? (
       <div class="mt-6 space-y-4">
         <div class="rounded-lg border border-moss bg-card p-5">
-          <div class="font-mono text-xs uppercase text-ink-muted">headline — cryptographically attested, not self-reported</div>
+          <div class="font-mono text-xs uppercase text-ink-muted">headline — cryptographically attested</div>
           <div class="mt-1 font-serif text-3xl text-moss-deep">{guarded} guarded</div>
           <div class="font-mono text-xs text-ink-muted">{signatures} reviewer signature{signatures === 1 ? "" : "s"} over current measurements · of {snap.counts.total} listed</div>
         </div>

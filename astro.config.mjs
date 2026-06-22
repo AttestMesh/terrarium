@@ -11,5 +11,8 @@ export default defineConfig({
   integrations: [svelte()],
   vite: {
     plugins: [tailwindcss()],
+    // allow the dev/preview server to answer requests addressed to the tailnet host
+    preview: { allowedHosts: [".tail39cb2e.ts.net"] },
+    server: { allowedHosts: [".tail39cb2e.ts.net"] },
   },
 });

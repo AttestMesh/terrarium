@@ -6,9 +6,8 @@ export interface Explainer {
   body: string[];
 }
 
-// Topical-authority pillars — honest "what is X" explainers that rank on the concept
-// and internally link to the specimens. They state what each guarantee does and does
-// not cover (the spec's honest ceiling), never overselling.
+// "What is X" explainers that rank on the concept and link to the specimens. Each
+// states what the guarantee does and does not cover.
 export const EXPLAINERS: Explainer[] = [
   {
     slug: "attestation",
@@ -43,7 +42,7 @@ export const EXPLAINERS: Explainer[] = [
     body: [
       "Intel TDX (Trust Domain Extensions) isolates an entire virtual machine in an encrypted, integrity-protected trust domain, so the host and hypervisor cannot read its memory. It measures the launched image (MRTD) plus runtime extensions (RTMRs), which a client verifies via attestation.",
       "SGX, by contrast, isolates a process-level enclave with a small trusted computing base — powerful, but it requires re-architecting an app around enclave boundaries. TDX lifts confidentiality to the whole-VM level, which is why it is practical to package existing workloads like Postgres or vLLM confidentially.",
-      "Terrarium specimens target TDX on dstack. The honest ceiling stays the same across both: confidentiality of memory and enforced boundaries — not protection against every covert or side channel.",
+      "Terrarium specimens target TDX on dstack. The same limit applies to both: they protect memory confidentiality and enforce boundaries, but not against every covert or side channel.",
     ],
   },
 ];
