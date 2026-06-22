@@ -1,0 +1,11 @@
+# The platform's own first-party reviewer key. In v1 the accredited signer set is
+# first-party only — Terrarium (the registry) stands behind every `guarded` boundary
+# review with its own key. Third-party auditors bringing their own keys are the
+# deferred federation layer. The matching private key lives only in a CI secret /
+# .secrets/terrarium.key (gitignored), never committed.
+id: terrarium
+name: Terrarium
+kind: first-party
+signingKey: ed25519:eh2x6-OhlBCvf6ZugeIRNL2-L4LXj_FfFRUHM76Fspc
+accreditedAt: 2026-06-22T00:00:00Z
+status: active

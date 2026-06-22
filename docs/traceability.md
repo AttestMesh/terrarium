@@ -18,7 +18,7 @@ Maps the spec (`studio/docs/specs/cvm-integrations-marketplace.md`) to code. ✅
 | ✅ Specimen entry schema (two registers) | `specimens/[id].astro` (field-guide ↔ inspector) | `e2e/specimen.spec.ts` |
 | ✅ Logical categories as navigation | `categorySchema`, `categories/[category].astro` | — |
 | ✅ Signed measurement log (append-only, hash-chained) | `cli/src/gen-log.ts` (materialised from git substrate), `/measurements/:hash` | `crypto.test.ts`; integration-verified tamper detection |
-| ✅ First-party certification + signing → `guarded` | `cli/src/{crypto,attest}.ts`, `reviewers/flashbots.yaml`, tier join by measurement | `crypto.test.ts`, `facts.test.ts`, `built-html.test.ts` (guarded + signer) |
+| ✅ First-party certification + signing → `guarded` | `cli/src/{crypto,attest}.ts`, `reviewers/terrarium.yaml` (platform's own key), tier join by measurement | `crypto.test.ts`, `facts.test.ts` |
 | ✅ Embeddable trust badge | `gen-api.ts` → `/badge/:id.svg` | `built-html` (served) |
 | ✅ Deprecation / measurement-invalid path | `advisories.yaml` → `deriveFreshness` `cve` → static banner | `freshness.test.ts`, `built-html` |
 | ✅ Gate 0 zero-trust isolation (CI) | `.github/workflows/pr-gates.yml` (pull_request, no secrets, ≥2-rebuilder matrix → converge), `scope-check`, `CODEOWNERS`, `docs/ci-and-branch-protection.md` | `scope-check.test.ts` |

@@ -39,9 +39,8 @@ describe.skipIf(!hasBuild)("built specimen page SEO contract (dist/)", () => {
     expect(stripped).toContain("allowlist"); // the (controlled-egress) boundary
   });
 
-  it("lists the real specimen honestly at raw (no unearned signature)", () => {
+  it("lists the real specimen honestly at raw", () => {
     expect(html).toContain("raw");
-    expect(html).not.toContain("flashbots"); // nothing signed this measurement
   });
 });
 
@@ -58,5 +57,8 @@ describe.skipIf(!existsSync(join(dist, "catalog", "dstackgres.json")))("served r
       "publisher",
       "tier",
     ]);
+    // honest: no unearned signature on this measurement
+    expect(body.tier).toBe("raw");
+    expect(body.attestations).toEqual([]);
   });
 });
