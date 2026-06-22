@@ -1,39 +1,37 @@
 @import "tailwindcss";
 
+@import "@fontsource-variable/outfit";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/instrument-serif/400-italic.css";
 @import "@fontsource/ibm-plex-mono/400.css";
 @import "@fontsource/ibm-plex-mono/500.css";
 @import "@fontsource/ibm-plex-mono/600.css";
-@import "@fontsource/ibm-plex-mono/700.css";
 
-/* Terrarium, skinned to the AttestMesh fleet control-plane HUD — the exact cold-cyan
-   surveillance aesthetic of src/styles/control-plane.css: near-black base, faint cyan
-   technical grid, cyan #41e6f2 chrome, IBM Plex Mono everywhere, scanline overlay. */
+/* Terrarium — a dark "field-guide terminal": the studio house palette (near-black
+   page, mint accent, Instrument Serif display, IBM Plex Mono labels, Outfit body)
+   with HUD specimen-sheet chrome (corner ticks, bordered panels, mono chips). */
 @theme {
-  --font-sans: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
-  --font-serif: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --font-sans: "Outfit Variable", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
 
-  --color-page: #04070b; /* cp-bg */
-  --color-surface: #070c12; /* cp-panel */
-  --color-surface-soft: #060a10; /* cp-bg-2 */
-  --color-card: #0a1119; /* cp-panel-2 */
-  --color-rule: #143840; /* cp-frame */
-  --color-frame-2: #0d262c; /* cp-frame-2 */
+  --color-page: #0b0d0f;
+  --color-surface: #0d1014;
+  --color-surface-soft: #0f1218;
+  --color-card: #11141a;
+  --color-rule: #1e2430;
 
-  --color-ink: #a9dbe2; /* cp-text */
-  --color-ink-body: #a9dbe2;
-  --color-ink-muted: #5d8b92; /* cp-text-dim */
-  --color-ink-dim: #355b62; /* cp-text-mute */
+  --color-ink: #f0f2f5;
+  --color-ink-body: #c8cdd5;
+  --color-ink-muted: #7a8190;
+  --color-ink-dim: #555e6e;
 
-  /* cyan is the chrome accent (token name kept as `moss` so existing classes recolor) */
-  --color-moss: #41e6f2; /* cp-cyan */
-  --color-moss-deep: #6df3fb; /* cp-cyan-2 */
-  --color-cyan-dim: #1b8c99; /* cp-cyan-dim */
-  --color-cyan-faint: #0f3b43; /* cp-cyan-faint */
-
-  --color-amber: #f5b14c; /* st-watch — beta */
-  --color-blue: #7d9bd1; /* proof: accountable */
-  --color-danger: #ff3b46; /* cp-red */
+  /* mint is the field-guide's living green — the primary accent */
+  --color-moss: #34d399;
+  --color-moss-deep: #4eeeb5;
+  --color-amber: #fbbf24;
+  --color-blue: #60a5fa;
+  --color-danger: #f87171;
 }
 
 :root {
@@ -41,58 +39,27 @@
 }
 
 body {
-  font-family: var(--font-mono);
-  color: var(--color-ink-body);
-  background-color: var(--color-page);
-  /* faint cyan technical grid (cp-root) */
+  font-family: var(--font-sans);
+  /* faint specimen-sheet grid */
   background-image:
-    linear-gradient(rgba(38, 110, 124, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(38, 110, 124, 0.07) 1px, transparent 1px);
-  background-size: 32px 32px;
+    linear-gradient(rgba(52, 211, 153, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(52, 211, 153, 0.025) 1px, transparent 1px);
+  background-size: 30px 30px;
   -webkit-font-smoothing: antialiased;
 }
 
-/* scanline overlay (cp-scan) */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 50;
-  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 2px, rgba(0, 20, 26, 0.22) 3px);
-  mix-blend-mode: multiply;
-  opacity: 0.5;
-}
-
-::selection {
-  background: var(--color-cyan-faint);
-  color: var(--color-moss-deep);
-}
-
-*::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-*::-webkit-scrollbar-track {
-  background: var(--color-frame-2);
-}
-*::-webkit-scrollbar-thumb {
-  background: var(--color-rule);
-  border: 1px solid var(--color-cyan-faint);
-}
-
 /* tier accents — derived, never authored */
-.tier-raw { color: var(--color-ink-dim); }
+.tier-raw { color: var(--color-ink-muted); }
 .tier-beta { color: var(--color-amber); }
 .tier-guarded { color: var(--color-moss); }
 
-/* ── HUD chrome (cp panels / chips / corner ticks) ─────────────────────── */
+/* ── HUD chrome ────────────────────────────────────────────────────────── */
 .tk-card {
   border: 1px solid var(--color-rule);
   background: var(--color-card);
   transition: border-color 0.15s ease;
 }
-.tk-card:hover { border-color: var(--color-cyan-dim); }
+.tk-card:hover { border-color: color-mix(in srgb, var(--color-moss) 55%, transparent); }
 
 .tk-chip {
   display: inline-flex;
@@ -104,23 +71,23 @@ body::after {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--c, var(--color-moss));
-  border: 1px solid color-mix(in srgb, var(--c, var(--color-moss)) 45%, transparent);
-  background: color-mix(in srgb, var(--c, var(--color-moss)) 12%, transparent);
+  color: var(--c, var(--color-ink-muted));
+  border: 1px solid color-mix(in srgb, var(--c, var(--color-ink-muted)) 45%, transparent);
+  background: color-mix(in srgb, var(--c, var(--color-ink-muted)) 12%, transparent);
   white-space: nowrap;
   line-height: 1.5;
 }
 .tk-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 2px;
-  background: color-mix(in srgb, var(--c, var(--color-moss)) 26%, transparent);
+  background: color-mix(in srgb, var(--c, var(--color-moss)) 28%, transparent);
   border: 1.3px solid var(--c, var(--color-moss));
   display: inline-block;
 }
 
-.tk-panel { position: relative; border: 1px solid var(--color-rule); background: var(--color-panel, var(--color-surface)); }
-.tk-panel > .tk-corner { position: absolute; width: 7px; height: 7px; border: 1px solid var(--color-moss); pointer-events: none; }
+.tk-panel { position: relative; border: 1px solid var(--color-rule); background: var(--color-surface); }
+.tk-panel > .tk-corner { position: absolute; width: 7px; height: 7px; border: 1px solid var(--color-moss); pointer-events: none; opacity: 0.7; }
 .tk-corner.tl { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
 .tk-corner.tr { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
 .tk-corner.bl { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
@@ -129,9 +96,9 @@ body::after {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.4rem 0.7rem;
-  border-bottom: 1px solid var(--color-frame-2);
-  background: linear-gradient(180deg, rgba(65, 230, 242, 0.04), transparent);
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid var(--color-rule);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-moss) 5%, transparent), transparent);
 }
 .tk-panel-title {
   font-family: var(--font-mono);
@@ -141,7 +108,7 @@ body::after {
   text-transform: uppercase;
   color: var(--color-moss);
 }
-.tk-panel-code { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--color-ink-dim); }
+.tk-panel-code { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--color-ink-muted); }
 
 .tk-link {
   color: var(--color-moss);
@@ -149,5 +116,3 @@ body::after {
   border-bottom: 1px solid color-mix(in srgb, var(--color-moss) 35%, transparent);
 }
 .tk-link:hover { color: var(--color-moss-deep); }
-
-@keyframes cp-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
